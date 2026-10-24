@@ -5,226 +5,311 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>تاكسي العراق 🇮🇶🚕</title>
   
-  <!-- الخرائط والخطوط -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --primary: #0B1B3D;    /* أزرق ملكي */
-      --secondary: #00C9A7;  /* فيروزي فاخر */
-      --gold: #D4AF37;       /* ذهبي */
-      --bg: #F5F7FA;
-      --text: #333;
-      --shadow: 0 10px 30px rgba(11,27,61,0.15);
+      --bg-dark: #0a0a0a;
+      --card-bg: #141414;
+      --gold: #D4AF37;
+      --gold-glow: rgba(212,175,55,0.3);
+      --text-light: #ffffff;
+      --text-muted: #888;
+      --secondary: #00C9A7;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-    body { background: var(--bg); overflow: hidden; height: 100vh; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-dark); height: 100vh; overflow: hidden; color: var(--text-light); }
 
-    /* شاشة البداية الفخمة */
-    #splash { position: fixed; inset: 0; background: linear-gradient(135deg, #0B1B3D, #1A365D); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s; }
-    #splash i { font-size: 90px; color: var(--gold); margin-bottom: 20px; animation: bounce 2s infinite; text-shadow: 0 0 20px rgba(212,175,55,0.5); }
-    #splash h1 { color: white; font-size: 36px; font-weight: 900; letter-spacing: 2px; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    /* ==========================================
+       الشاشة الرئيسية (الأقسام)
+    ========================================== */
+    #home-screen {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      background: radial-gradient(circle at top, #1a1a1a 0%, #0a0a0a 100%);
+      z-index: 10; overflow-y: auto; padding-bottom: 80px; /* مساحة للشريط السفلي */
+    }
 
-    /* الخريطة */
+    .header { text-align: center; padding: 30px 20px 20px; }
+    .header h1 { font-size: 24px; font-weight: 900; display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .header p { color: var(--text-muted); font-size: 14px; margin-top: 5px; }
+
+    /* شبكة الخدمات */
+    .services-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 15px;
+    }
+    .service-card {
+      background: var(--card-bg); border: 1px solid #2a2a2a; border-radius: 16px;
+      padding: 15px 10px; text-align: center; cursor: pointer; transition: 0.2s;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    }
+    .service-card:active { transform: scale(0.95); border-color: var(--gold); }
+    .service-card .icon { font-size: 32px; margin-bottom: 10px; }
+    .service-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+    .service-card p { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+    /* الخدمات العريضة (الكراج والموظفين) */
+    .wide-services { display: flex; gap: 12px; padding: 12px 15px; }
+    .wide-services .service-card { flex: 1; flex-direction: column; padding: 20px 10px; }
+    .wide-services .icon-p { 
+      background: #2b5c8f; color: white; width: 40px; height: 40px; 
+      display: flex; align-items: center; justify-content: center; 
+      border-radius: 10px; font-size: 24px; font-weight: bold; margin-bottom: 10px;
+    }
+
+    /* الأزرار السفلية */
+    .bottom-actions { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+    .btn-gold {
+      background: linear-gradient(to bottom, #f5d76e, #d4af37); color: #000;
+      border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900;
+      cursor: pointer; box-shadow: 0 4px 15px var(--gold-glow); display: flex; justify-content: center; gap: 10px; align-items: center;
+    }
+    .btn-outline {
+      background: transparent; color: var(--text-light); border: 1px solid #333;
+      padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700;
+      cursor: pointer; display: flex; justify-content: center; gap: 10px; align-items: center;
+    }
+
+    /* شريط التنقل السفلي */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+      background: #111; border-top: 1px solid #222;
+      display: flex; justify-content: space-around; align-items: center;
+      border-radius: 20px 20px 0 0; z-index: 20;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .nav-item i { font-size: 22px; }
+    .nav-item.active { color: var(--gold); }
+    .nav-item.active i { text-shadow: 0 0 10px var(--gold-glow); }
+
+    /* ==========================================
+       شاشة الخريطة
+    ========================================== */
+    #map-screen {
+      position: absolute; inset: 0; display: none; z-index: 15;
+    }
+    
     #map { position: absolute; inset: 0; z-index: 1; }
+    
+    .btn-back {
+      position: absolute; top: 20px; right: 20px; z-index: 20;
+      width: 45px; height: 45px; border-radius: 50%; border: none;
+      background: white; color: var(--bg-dark); font-size: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer;
+      display: flex; justify-content: center; align-items: center;
+    }
 
-    /* دبوس التثبيت في منتصف الشاشة */
+    .search-container { 
+      position: absolute; top: 20px; right: 80px; left: 20px; z-index: 20;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); 
+      border-radius: 15px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; 
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2); 
+    }
+    .search-container i { color: var(--secondary); font-size: 18px; }
+    .search-container input { border: none; background: transparent; outline: none; flex: 1; font-size: 15px; font-weight: 700; color: #333; font-family: inherit; }
+
     .center-pin-container {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -100%);
-      z-index: 10;
-      pointer-events: none;
-      display: flex; flex-direction: column; align-items: center;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%);
+      z-index: 10; pointer-events: none; display: flex; flex-direction: column; align-items: center;
     }
-    .center-pin-container i {
-      font-size: 40px;
-      color: var(--gold);
-      filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4));
-      animation: float 2s ease-in-out infinite;
-    }
-    .center-pin-shadow {
-      width: 15px; height: 5px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 50%;
-      margin-top: -5px;
-      animation: shadow-pulse 2s ease-in-out infinite;
-    }
+    .center-pin-container i { font-size: 40px; color: var(--gold); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); animation: float 2s ease-in-out infinite; }
+    .center-pin-shadow { width: 15px; height: 5px; background: rgba(0,0,0,0.3); border-radius: 50%; margin-top: -5px; animation: shadow-pulse 2s ease-in-out infinite; }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     @keyframes shadow-pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.5); opacity: 0.2; } }
 
-    /* الشريط العلوي (بحث + قائمة) */
-    .top-bar { position: absolute; top: 20px; right: 20px; left: 20px; z-index: 20; display: flex; flex-direction: column; gap: 15px; pointer-events: none; }
-    .search-container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); pointer-events: auto; border: 1px solid rgba(255,255,255,0.5); }
-    .search-container i { color: var(--secondary); font-size: 20px; }
-    .search-container input { border: none; background: transparent; outline: none; flex: 1; font-size: 16px; font-weight: 700; color: var(--primary); font-family: inherit; }
-    
-    .btn-circle { width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; color: var(--primary); box-shadow: var(--shadow); pointer-events: auto; cursor: pointer; border: none; transition: 0.3s; }
-    .btn-circle:active { transform: scale(0.9); }
-    .btn-locate { position: absolute; bottom: 380px; left: 20px; z-index: 20; background: white; color: var(--secondary); }
+    .btn-locate { position: absolute; bottom: 350px; left: 20px; z-index: 20; width: 50px; height: 50px; border-radius: 50%; border: none; background: white; color: var(--secondary); font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; }
 
-    /* البطاقة السفلية الفخمة */
-    .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 30px 30px 0 0; padding: 20px 20px 30px 20px; box-shadow: 0 -15px 40px rgba(0,0,0,0.15); z-index: 20; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(100%); }
+    .bottom-sheet { 
+      position: absolute; bottom: 0; left: 0; right: 0; background: white; 
+      border-radius: 25px 25px 0 0; padding: 20px; z-index: 20; 
+      transition: transform 0.4s; transform: translateY(100%); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); 
+    }
     .bottom-sheet.open { transform: translateY(0); }
-    .drag-handle { width: 60px; height: 6px; background: #e0e0e0; border-radius: 10px; margin: 0 auto 20px auto; }
+    .drag-handle { width: 50px; height: 5px; background: #ddd; border-radius: 10px; margin: 0 auto 15px auto; }
     
-    .section-title { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-
-    /* خيارات السيارات */
-    .cars-grid { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
+    .section-title { font-size: 17px; font-weight: 900; color: var(--bg-dark); margin-bottom: 15px; }
+    .cars-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
     .cars-grid::-webkit-scrollbar { display: none; }
-    .car-card { min-width: 110px; border: 2px solid #f0f0f0; border-radius: 20px; padding: 15px 10px; text-align: center; cursor: pointer; transition: 0.3s; background: white; }
-    .car-card.active { border-color: var(--secondary); background: rgba(0,201,167,0.08); box-shadow: 0 5px 15px rgba(0,201,167,0.2); }
-    .car-card i { font-size: 35px; color: var(--primary); margin-bottom: 10px; transition: 0.3s; }
+    .car-card { min-width: 100px; border: 2px solid #f0f0f0; border-radius: 15px; padding: 12px 8px; text-align: center; cursor: pointer; transition: 0.3s; }
+    .car-card.active { border-color: var(--secondary); background: rgba(0,201,167,0.08); }
+    .car-card i { font-size: 28px; color: var(--bg-dark); margin-bottom: 8px; }
     .car-card.active i { color: var(--secondary); }
-    .car-card h3 { font-size: 15px; color: var(--text); font-weight: 700; margin-bottom: 5px; }
-    .car-card p { font-size: 12px; color: gray; }
-    .car-card span { font-size: 16px; font-weight: 900; color: var(--gold); display: block; margin-top: 8px; }
+    .car-card h3 { font-size: 13px; color: #333; font-weight: 700; margin-bottom: 3px; }
+    .car-card span { font-size: 14px; font-weight: 900; color: var(--gold); display: block; margin-top: 5px; }
 
-    /* زر الطلب */
-    .btn-primary { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--secondary), #00A88B); color: white; border: none; border-radius: 20px; font-size: 18px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 8px 20px rgba(0,201,167,0.4); transition: 0.3s; }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-primary:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+    .btn-primary { width: 100%; padding: 16px; background: var(--secondary); color: white; border: none; border-radius: 15px; font-size: 17px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,201,167,0.3); }
+    .btn-primary:disabled { background: #ccc; box-shadow: none; }
 
-    /* شاشة البحث عن سائق */
-    #searching-overlay { position: absolute; inset: 0; background: rgba(11,27,61,0.85); z-index: 50; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; backdrop-filter: blur(8px); }
-    .radar { width: 180px; height: 180px; border-radius: 50%; border: 3px solid rgba(0,201,167,0.3); position: relative; margin-bottom: 30px; display: flex; justify-content: center; align-items: center; }
+    #searching-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.9); z-index: 50; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; backdrop-filter: blur(5px); }
+    .radar { width: 150px; height: 150px; border-radius: 50%; border: 3px solid rgba(0,201,167,0.3); position: relative; margin-bottom: 30px; display: flex; justify-content: center; align-items: center; }
     .radar::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; background: var(--secondary); opacity: 0.3; animation: pulse 2s infinite; }
-    .radar i { font-size: 60px; color: var(--secondary); z-index: 2; animation: bounce 1s infinite; }
+    .radar i { font-size: 50px; color: var(--secondary); z-index: 2; animation: bounce 1s infinite; }
     @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.5); opacity: 0; } }
-
-    /* لوحة الإدارة */
-    #admin-panel { position: absolute; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .stat-card { background: white; padding: 20px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 15px; }
-    .stat-card h3 { color: gray; font-size: 14px; margin-bottom: 10px; }
-    .stat-card h2 { color: var(--primary); font-size: 28px; font-weight: 900; }
-
-    /* القائمة الجانبية */
-    #drawer { position: absolute; top: 0; right: -320px; width: 300px; height: 100%; background: white; z-index: 100; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s; padding: 30px 20px; display: flex; flex-direction: column; }
-    #drawer.open { right: 0; }
-    .user-info { display: flex; align-items: center; gap: 15px; padding-bottom: 25px; border-bottom: 1px solid #eee; margin-bottom: 25px; }
-    .menu-item { padding: 15px; display: flex; align-items: center; gap: 15px; font-size: 16px; font-weight: 700; color: var(--text); cursor: pointer; border-radius: 15px; transition: 0.2s; margin-bottom: 5px; }
-    .menu-item:hover { background: #f0f4f8; color: var(--secondary); }
-    .menu-item i { width: 25px; color: var(--primary); font-size: 20px; }
   </style>
 </head>
 <body>
 
-  <!-- شاشة البداية -->
-  <div id="splash">
-    <i class="fa-solid fa-taxi"></i>
-    <h1>تاكسي العراق</h1>
-  </div>
-
-  <!-- الخريطة -->
-  <div id="map"></div>
-
-  <!-- دبوس التثبيت -->
-  <div class="center-pin-container">
-    <i class="fa-solid fa-location-dot"></i>
-    <div class="center-pin-shadow"></div>
-  </div>
-
-  <!-- القائمة الجانبية -->
-  <div id="drawer">
-    <div class="user-info">
-      <i class="fa-solid fa-user-circle fa-4x" style="color: var(--primary);"></i>
-      <div>
-        <h3 style="font-size: 20px; color: var(--primary);">الراكب العزيز</h3>
-        <p style="color: gray; font-size: 14px; font-weight: 600;">+964 770 000 0000</p>
-      </div>
+  <!-- ==========================================
+       1. الشاشة الرئيسية (الأقسام)
+  ========================================== -->
+  <div id="home-screen">
+    <div class="header">
+      <h1>طلب تكسي أو مندوب 🚕</h1>
+      <p>اختر نوع الخدمة التي تحتاجها</p>
     </div>
-    <div class="menu-item"><i class="fa-solid fa-house"></i> الرئيسية</div>
-    <div class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> رحلاتي السابقة</div>
-    <div class="menu-item"><i class="fa-solid fa-wallet"></i> المحفظة</div>
-    <div class="menu-item" onclick="openAdmin()"><i class="fa-solid fa-shield-halved"></i> لوحة الإدارة</div>
-    <div class="menu-item" style="margin-top: auto; color: #e74c3c;"><i class="fa-solid fa-right-from-bracket" style="color: #e74c3c;"></i> تسجيل خروج</div>
-  </div>
 
-  <!-- الشريط العلوي -->
-  <div class="top-bar">
-    <div style="display: flex; gap: 10px;">
-      <button class="btn-circle" onclick="toggleDrawer()"><i class="fa-solid fa-bars"></i></button>
-      <div class="search-container">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="addressDisplay" placeholder="حرك الخريطة لتحديد الوجهة..." readonly>
+    <div class="services-grid">
+      <!-- التكتك -->
+      <div class="service-card" onclick="openMap('تكتك')">
+        <div class="icon">🛺</div>
+        <h3>تكتك</h3>
+        <p>اطلب تكتك وحدد موقع الانطلاق والوجهة</p>
       </div>
-    </div>
-  </div>
-
-  <!-- زر تحديد الموقع -->
-  <button class="btn-circle btn-locate" onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i></button>
-
-  <!-- البطاقة السفلية -->
-  <div class="bottom-sheet" id="bottomSheet">
-    <div class="drag-handle"></div>
-    <div class="section-title"><i class="fa-solid fa-car-side" style="color: var(--secondary);"></i> اختر وسيلة النقل</div>
-    
-    <div class="cars-grid" id="carsGrid">
-      <div class="car-card active" onclick="selectCar(this, 500)">
-        <i class="fa-solid fa-car-side"></i>
-        <h3>اقتصادية</h3>
-        <p>4 مقاعد</p>
-        <span id="price-economy">--- د.ع</span>
+      <!-- مندوب -->
+      <div class="service-card" onclick="openMap('مندوب')">
+        <div class="icon">🛵</div>
+        <h3>مندوب</h3>
+        <p>اطلب مندوب لاستلام أو توصيل طلبك</p>
       </div>
-      <div class="car-card" onclick="selectCar(this, 800)">
-        <i class="fa-solid fa-car"></i>
-        <h3>عائلية</h3>
-        <p>7 مقاعد</p>
-        <span id="price-family">--- د.ع</span>
+      <!-- تكسي -->
+      <div class="service-card" onclick="openMap('تكسي')" style="border-color: var(--gold);">
+        <div class="icon">🚕</div>
+        <h3>تكسي</h3>
+        <p>اطلب سيارة وحدد موقع الانطلاق والوجهة</p>
       </div>
-      <div class="car-card" onclick="selectCar(this, 1200)">
-        <i class="fa-solid fa-car-rear"></i>
-        <h3>مميزة</h3>
-        <p>فخمة</p>
-        <span id="price-premium">--- د.ع</span>
+      <!-- خط الطلاب -->
+      <div class="service-card" onclick="openMap('خط الطلاب')">
+        <div class="icon">🎒</div>
+        <h3>خط الطلاب</h3>
+        <p>شوف الخطوط أو أضف طلب طالب لانطلاق والوقت</p>
+      </div>
+      <!-- سيارة حمل -->
+      <div class="service-card" onclick="openMap('سيارة حمل')">
+        <div class="icon">🚚</div>
+        <h3>سيارة حمل</h3>
+        <p>اطلب سيارة حمل وحدد الاستلام والتسليم وتابع الطلب</p>
+      </div>
+      <!-- الستونة -->
+      <div class="service-card" onclick="openMap('الستونة')">
+        <div class="icon">🛻</div>
+        <h3>الستونة</h3>
+        <p>اطلب ستونة وحدد الاستلام والتسليم وتابع الطلب</p>
       </div>
     </div>
 
-    <button class="btn-primary" id="requestBtn" onclick="requestRide()" disabled>
-      تأكيد طلب السيارة <i class="fa-solid fa-arrow-left"></i>
-    </button>
-  </div>
-
-  <!-- شاشة البحث عن سائق -->
-  <div id="searching-overlay">
-    <div class="radar"><i class="fa-solid fa-car"></i></div>
-    <h2>جاري البحث عن سائق قريب...</h2>
-    <p style="margin-top: 10px; color: #ccc;">يرجى الانتظار</p>
-  </div>
-
-  <!-- لوحة الإدارة -->
-  <div id="admin-panel">
-    <div class="admin-header">
-      <h2 style="color: var(--primary); font-weight: 900;">لوحة الإدارة</h2>
-      <button class="btn-circle" onclick="closeAdmin()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    
-    <div class="stat-card">
-      <h3>الرحلات النشطة حالياً</h3>
-      <h2 id="admin-active-rides">0</h2>
-    </div>
-    
-    <div class="stat-card">
-      <h3>تعرفة الكيلومتر (اقتصادي)</h3>
-      <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <input type="number" id="admin-price-econ" value="500" style="flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-family: inherit; font-weight: bold; outline: none;">
-        <button onclick="updatePrices()" style="background: var(--secondary); color: white; border: none; padding: 10px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; font-family: inherit;">تحديث</button>
+    <!-- الكراج وخط الموظفين -->
+    <div class="wide-services">
+      <div class="service-card" onclick="openMap('الكراج')">
+        <div class="icon-p">P</div>
+        <h3>الكراج الموحد</h3>
+        <p>شوف مواقع الكراج أو أضف طلبك حتى يقبله سائق من الكراج</p>
+      </div>
+      <div class="service-card" onclick="openMap('خط الموظفين')">
+        <div class="icon">👨‍💼</div>
+        <h3>خط الموظفين</h3>
+        <p>شوف الخطوط أو أضف طلب موظف بالمكان والوقت حتى يقبله سائق</p>
       </div>
     </div>
 
-    <button class="btn-primary" style="background: var(--primary); margin-top: auto;" onclick="closeAdmin()">العودة للتطبيق</button>
+    <!-- الأزرار السفلية -->
+    <div class="bottom-actions">
+      <button class="btn-gold" onclick="alert('سيتم فتح واجهة السائق قريباً!')">
+        فتح واجهة السائق 🚕
+      </button>
+      <button class="btn-outline" onclick="alert('سيتم فتح صفحة التسجيل قريباً!')">
+        تسجيل سائق / مندوب / ستونة / حمل 📝
+      </button>
+    </div>
+
+    <!-- شريط التنقل السفلي -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="alert('رقم الدعم الفني: 07700000000')">
+        <i class="fa-solid fa-phone"></i>
+        <span>اتصل بنا</span>
+      </div>
+      <div class="nav-item active">
+        <i class="fa-solid fa-border-all"></i>
+        <span>الأقسام</span>
+      </div>
+      <div class="nav-item" onclick="openMap('الرئيسية')">
+        <i class="fa-solid fa-house"></i>
+        <span>الرئيسية</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       2. شاشة الخريطة (تفتح عند اختيار خدمة)
+  ========================================== -->
+  <div id="map-screen">
+    <div id="map"></div>
+
+    <!-- دبوس التثبيت -->
+    <div class="center-pin-container">
+      <i class="fa-solid fa-location-dot"></i>
+      <div class="center-pin-shadow"></div>
+    </div>
+
+    <!-- زر الرجوع -->
+    <button class="btn-back" onclick="closeMap()"><i class="fa-solid fa-arrow-right"></i></button>
+
+    <!-- شريط البحث -->
+    <div class="search-container">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="addressDisplay" placeholder="حرك الخريطة لتحديد الوجهة..." readonly>
+    </div>
+
+    <!-- زر تحديد الموقع -->
+    <button class="btn-locate" onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i></button>
+
+    <!-- البطاقة السفلية للسيارات -->
+    <div class="bottom-sheet" id="bottomSheet">
+      <div class="drag-handle"></div>
+      <div class="section-title" id="mapTitle"><i class="fa-solid fa-car-side" style="color: var(--secondary);"></i> اختر وسيلة النقل</div>
+      
+      <div class="cars-grid" id="carsGrid">
+        <div class="car-card active" onclick="selectCar(this, 500)">
+          <i class="fa-solid fa-car-side"></i>
+          <h3>اقتصادية</h3>
+          <span id="price-economy">--- د.ع</span>
+        </div>
+        <div class="car-card" onclick="selectCar(this, 800)">
+          <i class="fa-solid fa-car"></i>
+          <h3>عائلية</h3>
+          <span id="price-family">--- د.ع</span>
+        </div>
+        <div class="car-card" onclick="selectCar(this, 1200)">
+          <i class="fa-solid fa-car-rear"></i>
+          <h3>مميزة</h3>
+          <span id="price-premium">--- د.ع</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="requestBtn" onclick="requestRide()" disabled>
+        تأكيد الطلب <i class="fa-solid fa-arrow-left"></i>
+      </button>
+    </div>
+
+    <!-- شاشة البحث عن سائق -->
+    <div id="searching-overlay">
+      <div class="radar"><i class="fa-solid fa-car"></i></div>
+      <h2>جاري البحث عن سائق قريب...</h2>
+      <p style="margin-top: 10px; color: #ccc;">يرجى الانتظار</p>
+    </div>
   </div>
 
   <!-- مكتبة الخرائط -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
+    // ==========================================
+    // المتغيرات العامة
+    // ==========================================
     let map;
     let userMarker;
     let routeLine;
@@ -233,26 +318,51 @@
     let destinationAddress = "";
     let basePrice = 500;
     let distanceKm = 0;
-    let selectedCarPrice = 500;
     let isLocating = false;
+    let mapInitialized = false;
 
+    // ==========================================
+    // التحكم بين الشاشات
+    // ==========================================
+    function openMap(serviceType) {
+      document.getElementById('home-screen').style.display = 'none';
+      document.getElementById('map-screen').style.display = 'block';
+      
+      // تخصيص العنوان حسب الخدمة المختارة
+      document.getElementById('mapTitle').innerHTML = `<i class="fa-solid fa-car-side" style="color: var(--secondary);"></i> ${serviceType}`;
+
+      if (!mapInitialized) {
+        initMap();
+        mapInitialized = true;
+      } else {
+        // تحديث حجم الخريطة لأنها كانت مخفية
+        setTimeout(() => { map.invalidateSize(); }, 100);
+      }
+    }
+
+    function closeMap() {
+      document.getElementById('map-screen').style.display = 'none';
+      document.getElementById('home-screen').style.display = 'flex';
+      // إخفاء البطاقة السفلية
+      document.getElementById('bottomSheet').classList.remove('open');
+    }
+
+    // ==========================================
     // تهيئة الخريطة
+    // ==========================================
     function initMap() {
-      // إعدادات الخريطة مع منع التكبير العشوائي
       map = L.map('map', { zoomControl: false, attributionControl: false }).setView([33.3152, 44.3661], 14);
       
-      // استخدام خريطة OpenStreetMap الحقيقية (مجانية ولا تحتاج مفتاح)
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-      }).addTo(map);
+      // خريطة مفتوحة المصدر لا تحتاج مفتاح
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-      // حدث عند توقف تحريك الخريطة (لتحديد الوجهة بالدبوس)
       map.on('moveend', onMapMoveEnd);
-
       locateUser();
     }
 
-    // تحديد موقع المستخدم
+    // ==========================================
+    // تحديد الموقع
+    // ==========================================
     function locateUser() {
       if (isLocating) return;
       isLocating = true;
@@ -263,14 +373,12 @@
             userLocation = [position.coords.latitude, position.coords.longitude];
             map.flyTo(userLocation, 16);
             
-            // إضافة علامة للموقع الحالي
             if (userMarker) map.removeLayer(userMarker);
             userMarker = L.marker(userLocation, {
               icon: L.divIcon({
                 className: 'custom-icon',
                 html: '<div style="background:#00C9A7; width:18px; height:18px; border-radius:50%; border:4px solid white; box-shadow:0 0 10px rgba(0,201,167,0.8);"></div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
+                iconSize: [26, 26], iconAnchor: [13, 13]
               })
             }).addTo(map);
 
@@ -279,7 +387,6 @@
           (error) => {
             isLocating = false;
             alert('يرجى تفعيل الـ GPS والسماح للمتصفح بالوصول للموقع.');
-            // في حال الرفض، نضع موقع افتراضي (بغداد)
             map.setView([33.3152, 44.3661], 14);
           },
           { enableHighAccuracy: true, timeout: 10000 }
@@ -287,7 +394,9 @@
       }
     }
 
-    // دالة تعمل عند تحريك الخريطة للبحث عن العنوان
+    // ==========================================
+    // تحريك الخريطة وتحديد الوجهة
+    // ==========================================
     async function onMapMoveEnd() {
       const center = map.getCenter();
       destinationLocation = [center.lat, center.lng];
@@ -295,27 +404,24 @@
       document.getElementById('addressDisplay').value = "جاري تحديد العنوان...";
       
       try {
-        // البحث العكسي (من إحداثيات إلى عنوان)
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&zoom=18&addressdetails=1`);
         const data = await response.json();
 
         if (data && data.display_name) {
-          // أخذ اسم المنطقة المختصرة
           const parts = data.display_name.split(',');
           destinationAddress = parts[0] + (parts[1] ? '، ' + parts[1] : '');
           document.getElementById('addressDisplay').value = destinationAddress;
           
-          // حساب المسافة والسعر
-          if (userLocation) {
-            drawRoute(userLocation, destinationLocation);
-          }
+          if (userLocation) drawRoute(userLocation, destinationLocation);
         }
       } catch (err) {
         document.getElementById('addressDisplay').value = "تعذر تحديد العنوان";
       }
     }
 
-    // رسم المسار
+    // ==========================================
+    // رسم المسار وحساب السعر
+    // ==========================================
     async function drawRoute(start, end) {
       try {
         const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
@@ -332,17 +438,12 @@
           }).addTo(map);
 
           updatePricesUI();
-          
-          // إظهار البطاقة السفلية
           document.getElementById('bottomSheet').classList.add('open');
           document.getElementById('requestBtn').disabled = false;
         }
-      } catch (err) {
-        console.log('خطأ في جلب المسار', err);
-      }
+      } catch (err) { console.log('خطأ في المسار', err); }
     }
 
-    // تحديث الأسعار
     function updatePricesUI() {
       const econPrice = Math.round(distanceKm * basePrice);
       const famPrice = Math.round(distanceKm * (basePrice + 300));
@@ -353,36 +454,32 @@
       document.getElementById('price-premium').innerText = premPrice.toLocaleString() + ' د.ع';
     }
 
-    // اختيار السيارة
     function selectCar(element, priceMultiplier) {
       document.querySelectorAll('.car-card').forEach(c => c.classList.remove('active'));
       element.classList.add('active');
-      selectedCarPrice = priceMultiplier;
     }
 
+    // ==========================================
     // طلب الرحلة
+    // ==========================================
     function requestRide() {
-      if (!destinationLocation) {
-        alert('الرجاء تحريك الخريطة لتحديد وجهتك أولاً!');
-        return;
-      }
+      if (!destinationLocation) return alert('الرجاء تحريك الخريطة لتحديد وجهتك!');
 
       document.getElementById('bottomSheet').classList.remove('open');
       document.getElementById('searching-overlay').style.display = 'flex';
 
-      // محاكاة قبول السائق
       setTimeout(() => {
         document.getElementById('searching-overlay').innerHTML = `
-          <div style="background: white; padding: 30px; border-radius: 25px; text-align: center; color: var(--primary); width: 85%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-            <i class="fa-solid fa-circle-check" style="font-size: 70px; color: var(--secondary); margin-bottom: 15px; filter: drop-shadow(0 5px 10px rgba(0,201,167,0.4));"></i>
+          <div style="background: white; padding: 25px; border-radius: 20px; text-align: center; color: #0a0a0a; width: 85%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <i class="fa-solid fa-circle-check" style="font-size: 60px; color: #00C9A7; margin-bottom: 10px;"></i>
             <h2 style="font-weight: 900;">تم قبول طلبك!</h2>
-            <div style="background: #f5f7fa; padding: 15px; border-radius: 15px; margin: 15px 0;">
-              <p style="margin: 5px 0; font-weight: 700;">السائق: علي حسن</p>
-              <p style="margin: 5px 0; color: gray; font-size: 14px;">السيارة: تويوتا كامري</p>
-              <p style="margin: 5px 0; color: gray; font-size: 14px;">اللوحة: 12345 بغداد</p>
+            <div style="background: #f5f7fa; padding: 15px; border-radius: 15px; margin: 15px 0; text-align: right;">
+              <p style="margin: 5px 0; font-weight: 700; font-size: 15px;">السائق: علي حسن</p>
+              <p style="margin: 5px 0; color: #666; font-size: 13px;">السيارة: تويوتا كامري</p>
+              <p style="margin: 5px 0; color: #666; font-size: 13px;">اللوحة: 12345 بغداد</p>
             </div>
-            <h3 style="margin: 15px 0; color: var(--gold);">السائق في الطريق إليك...</h3>
-            <button class="btn-primary" onclick="finishRide()" style="margin-top: 10px;">إنهاء الرحلة</button>
+            <h3 style="margin: 10px 0; color: #D4AF37; font-size: 16px;">السائق في الطريق إليك...</h3>
+            <button onclick="finishRide()" style="width: 100%; padding: 15px; background: #00C9A7; color: white; border: none; border-radius: 12px; font-weight: 900; font-size: 16px; margin-top: 10px;">إنهاء الرحلة</button>
           </div>
         `;
       }, 3500);
@@ -392,26 +489,6 @@
       alert('وصلت لوجهتك بسلامة! شكراً لاستخدامك تاكسي العراق.');
       location.reload();
     }
-
-    // التحكم بالواجهة
-    function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); }
-    function openAdmin() { document.getElementById('admin-panel').style.display = 'flex'; document.getElementById('admin-active-rides').innerText = Math.floor(Math.random() * 20) + 5; }
-    function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
-    function updatePrices() {
-      const newPrice = document.getElementById('admin-price-econ').value;
-      if (newPrice > 0) { basePrice = parseInt(newPrice); updatePricesUI(); alert('تم تحديث التعرفة بنجاح!'); }
-    }
-
-    // بدء التشغيل
-    window.onload = () => {
-      setTimeout(() => {
-        const splash = document.getElementById('splash');
-        splash.style.opacity = '0';
-        setTimeout(() => splash.style.display = 'none', 600);
-      }, 2000);
-
-      initMap();
-    };
   </script>
 </body>
 </html>
