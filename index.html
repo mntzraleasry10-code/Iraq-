@@ -14,7 +14,7 @@
       --bg-dark: #0a0a0a;
       --card-bg: #141414;
       --gold: #D4AF37;
-      --gold-glow: rgba(212,175,55,0.5);
+      --blue-btn: #1a365d;
       --text-light: #ffffff;
       --text-muted: #888;
       --secondary: #00C9A7;
@@ -52,17 +52,16 @@
     .wide-services .icon-p { background: #2b5c8f; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
 
     .bottom-actions { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-    .btn-gold { background: linear-gradient(to bottom, #f5d76e, #d4af37); color: #000; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px var(--gold-glow); display: flex; justify-content: center; gap: 10px; align-items: center; }
+    .btn-gold { background: linear-gradient(to bottom, #f5d76e, #d4af37); color: #000; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(212,175,55,0.5); display: flex; justify-content: center; gap: 10px; align-items: center; }
     .btn-outline { background: transparent; color: var(--text-light); border: 1px solid #333; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; gap: 10px; align-items: center; }
 
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: #111; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; border-radius: 20px 20px 0 0; z-index: 20; }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer; }
     .nav-item i { font-size: 22px; }
     .nav-item.active { color: var(--gold); }
-    .nav-item.active i { text-shadow: 0 0 10px var(--gold-glow); }
 
     /* ==========================================
-       شاشة الخريطة ونظام تثبيت الوجهة
+       شاشة الخريطة ونظام النقر
     ========================================== */
     #map-screen { position: absolute; inset: 0; display: none; z-index: 15; }
     #map { position: absolute; inset: 0; z-index: 1; }
@@ -73,41 +72,30 @@
       position: absolute; top: 20px; right: 80px; left: 20px; z-index: 20; 
       background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); 
       border-radius: 15px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; 
-      box-shadow: 0 5px 20px rgba(0,0,0,0.2); transition: 0.3s;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
     }
     .search-container i { color: var(--secondary); font-size: 18px; cursor: pointer; }
     .search-container input { border: none; background: transparent; outline: none; flex: 1; font-size: 15px; font-weight: 700; color: #333; font-family: inherit; }
 
-    /* تصميم الدبوس العملاق الثابت في منتصف الشاشة */
-    .center-pin-container { 
-      position: absolute; top: 50%; left: 50%; 
-      transform: translate(-50%, -100%); 
-      z-index: 10; pointer-events: none; 
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-      height: 60px;
-    }
-    .center-pin-container i { 
-      font-size: 55px; color: #D4AF37; /* لون ذهبي */
-      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5)); 
-      animation: pin-bounce 1.5s ease-in-out infinite; 
-    }
-    .pin-base {
-      width: 14px; height: 6px; background: rgba(0,0,0,0.4); border-radius: 50%;
-      margin-top: -5px; animation: base-pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pin-bounce { 
-      0%, 100% { transform: translateY(0); } 
-      50% { transform: translateY(-12px); } 
-    }
-    @keyframes base-pulse { 
-      0%, 100% { transform: scale(1); opacity: 0.8; } 
-      50% { transform: scale(1.6); opacity: 0.2; } 
-    }
-
-    .btn-locate { position: absolute; bottom: 350px; left: 20px; z-index: 20; width: 50px; height: 50px; border-radius: 50%; border: none; background: white; color: var(--secondary); font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s; }
+    .btn-locate { position: absolute; bottom: 200px; left: 20px; z-index: 20; width: 50px; height: 50px; border-radius: 50%; border: none; background: white; color: var(--secondary); font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s; }
     .btn-locate:active { transform: scale(0.9); }
 
+    /* زر تثبيت الوجهة الكبير (مثل الصورة) */
+    .confirm-btn-container {
+      position: absolute; bottom: 30px; left: 20px; right: 20px; z-index: 20;
+      display: none; /* يظهر عند النقر على الخريطة */
+    }
+    .btn-confirm {
+      width: 100%; padding: 18px; background: var(--blue-btn); color: white; 
+      border: none; border-radius: 15px; font-size: 18px; font-weight: 900;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; 
+      display: flex; justify-content: center; align-items: center; gap: 10px;
+      transition: 0.3s; animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .btn-confirm:active { transform: scale(0.98); }
+
+    /* البطاقة السفلية للسيارات */
     .bottom-sheet { 
       position: absolute; bottom: 0; left: 0; right: 0; background: white; 
       border-radius: 25px 25px 0 0; padding: 20px; z-index: 20; 
@@ -130,11 +118,13 @@
     .btn-primary { width: 100%; padding: 16px; background: var(--secondary); color: white; border: none; border-radius: 15px; font-size: 17px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,201,167,0.3); }
     .btn-primary:disabled { background: #ccc; box-shadow: none; }
 
+    /* شاشة البحث عن سائق */
     #searching-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.9); z-index: 50; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; backdrop-filter: blur(5px); }
     .radar { width: 150px; height: 150px; border-radius: 50%; border: 3px solid rgba(0,201,167,0.3); position: relative; margin-bottom: 30px; display: flex; justify-content: center; align-items: center; }
     .radar::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; background: var(--secondary); opacity: 0.3; animation: pulse 2s infinite; }
-    .radar i { font-size: 50px; color: var(--secondary); z-index: 2; animation: pin-bounce 1s infinite; }
+    .radar i { font-size: 50px; color: var(--secondary); z-index: 2; animation: bounce 1s infinite; }
     @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.5); opacity: 0; } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
   </style>
 </head>
 <body>
@@ -176,38 +166,39 @@
   <div id="map-screen">
     <div id="map"></div>
 
-    <!-- الدبوس الذهبي الثابت في المنتصف -->
-    <div class="center-pin-container">
-      <i class="fa-solid fa-location-dot"></i>
-      <div class="pin-base"></div>
-    </div>
-
     <!-- زر الرجوع -->
     <button class="btn-back" onclick="closeMap()"><i class="fa-solid fa-arrow-right"></i></button>
 
     <!-- شريط البحث -->
     <div class="search-container">
       <i class="fa-solid fa-magnifying-glass" onclick="searchLocation()"></i>
-      <input type="text" id="addressDisplay" placeholder="حرك الخريطة أو اكتب وجهتك..." onkeypress="handleSearch(event)">
+      <input type="text" id="addressDisplay" placeholder="اضغط على الخريطة لتحديد الوجهة..." onkeypress="handleSearch(event)">
     </div>
 
     <!-- زر تحديد الموقع الحالي -->
     <button class="btn-locate" onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i></button>
 
-    <!-- البطاقة السفلية للسيارات -->
+    <!-- زر تثبيت الوجهة الكبير -->
+    <div class="confirm-btn-container" id="confirmBtnContainer">
+      <button class="btn-confirm" onclick="confirmDestination()">
+        <i class="fa-solid fa-thumbtack"></i> تثبيت الوجهة الجديدة
+      </button>
+    </div>
+
+    <!-- البطاقة السفلية للسيارات (تظهر بعد التثبيت) -->
     <div class="bottom-sheet" id="bottomSheet">
       <div class="drag-handle"></div>
       <div class="section-title" id="mapTitle"><i class="fa-solid fa-car-side" style="color: var(--secondary);"></i> اختر وسيلة النقل</div>
       
       <div class="cars-grid" id="carsGrid">
-        <div class="car-card active" onclick="selectCar(this, 500)">
-          <i class="fa-solid fa-car-side"></i><h3>اقتصادية</h3><span id="price-economy">--- د.ع</span>
+        <div class="car-card active" onclick="selectCar(this, 1000)">
+          <i class="fa-solid fa-taxi"></i><h3>تكسي</h3><span id="price-taxi">--- د.ع</span>
         </div>
-        <div class="car-card" onclick="selectCar(this, 800)">
-          <i class="fa-solid fa-car"></i><h3>عائلية</h3><span id="price-family">--- د.ع</span>
+        <div class="car-card" onclick="selectCar(this, 1500)">
+          <i class="fa-solid fa-car"></i><h3>مميزة</h3><span id="price-premium">--- د.ع</span>
         </div>
         <div class="car-card" onclick="selectCar(this, 1200)">
-          <i class="fa-solid fa-car-rear"></i><h3>مميزة</h3><span id="price-premium">--- د.ع</span>
+          <i class="fa-solid fa-car-side"></i><h3>عائلية</h3><span id="price-family">--- د.ع</span>
         </div>
       </div>
 
@@ -218,7 +209,7 @@
 
     <!-- شاشة البحث عن سائق -->
     <div id="searching-overlay">
-      <div class="radar"><i class="fa-solid fa-car"></i></div>
+      <div class="radar"><i class="fa-solid fa-taxi"></i></div>
       <h2>جاري البحث عن سائق قريب...</h2>
       <p style="margin-top: 10px; color: #ccc;">يرجى الانتظار</p>
     </div>
@@ -229,19 +220,29 @@
   <script>
     let map;
     let userMarker;
+    let destMarker; // دبوس الوجهة
     let routeLine;
     let userLocation = null;
     let destinationLocation = null;
-    let basePrice = 500;
     let distanceKm = 0;
     let isLocating = false;
     let mapInitialized = false;
-    let searchTimeout = null; // متغير لمنع طلبات البحث السريعة
+    let isConfirmed = false; // هل تم تثبيت الوجهة؟
 
     function openMap(serviceType) {
       document.getElementById('home-screen').style.display = 'none';
       document.getElementById('map-screen').style.display = 'block';
-      document.getElementById('mapTitle').innerHTML = `<i class="fa-solid fa-car-side" style="color: var(--secondary);"></i> ${serviceType}`;
+      document.getElementById('mapTitle').innerHTML = `<i class="fa-solid fa-taxi" style="color: var(--secondary);"></i> ${serviceType}`;
+      
+      // إعادة تعيين الحالة
+      isConfirmed = false;
+      document.getElementById('bottomSheet').classList.remove('open');
+      document.getElementById('confirmBtnContainer').style.display = 'none';
+      document.getElementById('addressDisplay').value = "";
+      
+      // مسح المسار القديم إن وجد
+      if (routeLine) map.removeLayer(routeLine);
+      if (destMarker) map.removeLayer(destMarker);
 
       if (!mapInitialized) {
         initMap();
@@ -255,14 +256,17 @@
       document.getElementById('map-screen').style.display = 'none';
       document.getElementById('home-screen').style.display = 'flex';
       document.getElementById('bottomSheet').classList.remove('open');
+      document.getElementById('confirmBtnContainer').style.display = 'none';
     }
 
     function initMap() {
+      // إعداد الخريطة
       map = L.map('map', { zoomControl: false, attributionControl: false }).setView([33.3152, 44.3661], 14);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-      // عند انتهاء تحريك الخريطة
-      map.on('moveend', onMapMoveEnd);
+      // حدث النقر على الخريطة لوضع الدبوس
+      map.on('click', onMapClick);
+      
       locateUser();
     }
 
@@ -283,67 +287,89 @@
                 html: '<div style="background:#00C9A7; width:18px; height:18px; border-radius:50%; border:4px solid white; box-shadow:0 0 10px rgba(0,201,167,0.8);"></div>',
                 iconSize: [26, 26], iconAnchor: [13, 13]
               })
-            }).addTo(map);
+            }).addTo(map).bindPopup("موقعك الحالي");
 
             isLocating = false;
           },
           (error) => {
             isLocating = false;
             alert('يرجى تفعيل الـ GPS والسماح للمتصفح بالوصول للموقع.');
-            map.setView([33.3152, 44.3661], 14);
           },
           { enableHighAccuracy: true, timeout: 10000 }
         );
       }
     }
 
-    // دالة تثبيت الوجهة
-    function onMapMoveEnd() {
-      const center = map.getCenter();
-      destinationLocation = [center.lat, center.lng];
+    // دالة وضع الدبوس عند النقر على الخريطة
+    async function onMapClick(e) {
+      if (isConfirmed) return; // إذا تم التأكيد، لا تسمح بوضع دبوس جديد حتى يمسح
+
+      destinationLocation = [e.latlng.lat, e.latlng.lng];
       
-      // إظهار كلمة "جاري..."
-      document.getElementById('addressDisplay').value = "جاري تحديد العنوان...";
+      // إزالة الدبوس القديم
+      if (destMarker) map.removeLayer(destMarker);
+      if (routeLine) map.removeLayer(routeLine);
 
-      // إلغاء أي طلب سابق لتجنب الحظر
-      if (searchTimeout) clearTimeout(searchTimeout);
+      // إضافة الدبوس الأحمر الجديد (مثل الصورة)
+      destMarker = L.marker(destinationLocation, {
+        icon: L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        })
+      }).addTo(map);
 
-      // الانتظار ثانية واحدة بعد توقف الخريطة قبل طلب العنوان
-      searchTimeout = setTimeout(async () => {
-        try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&zoom=18&addressdetails=1&accept-language=ar`);
-          const data = await response.json();
+      // إظهار الفقاعة (Bubble) فوق الدبوس
+      destMarker.bindPopup("جاري تحديد العنوان...").openPopup();
 
-          if (data && data.display_name) {
-            const parts = data.display_name.split(',');
-            // جلب أول جزئين من العنوان ليكون مختصراً ومفيداً
-            const shortAddress = parts[0] + (parts[1] ? '، ' + parts[1] : '');
-            document.getElementById('addressDisplay').value = shortAddress;
-          } else {
-            document.getElementById('addressDisplay').value = "موقع محدد على الخريطة";
-          }
-          
-          // رسم المسار فوراً بعد تحديد العنوان
-          if (userLocation) drawRoute(userLocation, destinationLocation);
+      // إظهار زر التثبيت
+      document.getElementById('confirmBtnContainer').style.display = 'block';
 
-        } catch (err) {
-          // في حال فشل الاتصال، لا نعرض "خطأ"، بل نعرض "موقع محدد"
-          document.getElementById('addressDisplay').value = "موقع محدد على الخريطة";
-          if (userLocation) drawRoute(userLocation, destinationLocation);
+      // جلب عنوان النقطة المحددة
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&zoom=18&addressdetails=1&accept-language=ar`);
+        const data = await response.json();
+        
+        let addressName = "موقع محدد على الخريطة";
+        if (data && data.display_name) {
+          const parts = data.display_name.split(',');
+          addressName = parts[0] + (parts[1] ? '، ' + parts[1] : '');
         }
-      }, 800); // الانتظار 800 ملي ثانية
+        
+        // تحديث الفقاعة وشريط البحث
+        destMarker.setPopupContent(`<b>${addressName}</b>`).openPopup();
+        document.getElementById('addressDisplay').value = addressName;
+        
+      } catch (err) {
+        destMarker.setPopupContent("موقع محدد على الخريطة").openPopup();
+        document.getElementById('addressDisplay').value = "موقع محدد على الخريطة";
+      }
     }
 
-    // البحث اليدوي في الشريط العلوي
+    // عند الضغط على زر "تثبيت الوجهة"
+    function confirmDestination() {
+      if (!destinationLocation || !userLocation) return;
+      
+      isConfirmed = true;
+      document.getElementById('confirmBtnContainer').style.display = 'none'; // إخفاء الزر
+      destMarker.closePopup(); // إغلاق الفقاعة
+
+      // رسم المسار وحساب السعر
+      drawRoute(userLocation, destinationLocation);
+    }
+
+    // البحث اليدوي
     async function handleSearch(event) {
       if (event.key === 'Enter') searchLocation();
     }
 
     async function searchLocation() {
       const query = document.getElementById('addressDisplay').value;
-      if (!query || query === "جاري تحديد العنوان..." || query === "موقع محدد على الخريطة") return;
-
-      document.activeElement.blur(); // إخفاء لوحة المفاتيح
+      if (!query) return;
+      document.activeElement.blur(); 
 
       try {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' العراق')}&accept-language=ar`);
@@ -352,17 +378,18 @@
         if (data.length > 0) {
           const lat = parseFloat(data[0].lat);
           const lon = parseFloat(data[0].lon);
-          
-          // تحريك الخريطة للمكان المبحوث عنه
           map.flyTo([lat, lon], 16);
+          // وضع دبوس تلقائياً في المكان المبحوث عنه
+          onMapClick({ latlng: { lat: lat, lng: lon } });
         } else {
           alert('لم يتم العثور على المكان. جرب كتابة اسم منطقة أخرى.');
         }
       } catch (err) {
-        alert('خطأ في الاتصال بالخريطة. تأكد من الإنترنت.');
+        alert('خطأ في الاتصال بالخريطة.');
       }
     }
 
+    // رسم المسار
     async function drawRoute(start, end) {
       try {
         const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
@@ -371,30 +398,34 @@
 
         if (data.routes && data.routes.length > 0) {
           const route = data.routes[0];
-          distanceKm = (route.distance / 1000).toFixed(1);
+          distanceKm = (route.distance / 1000).toFixed(1); // المسافة بالكيلومتر
 
           if (routeLine) map.removeLayer(routeLine);
           routeLine = L.geoJSON(route.geometry, {
-            style: { color: '#00C9A7', weight: 5, opacity: 0.8, dashArray: '10, 10' }
+            style: { color: '#1a365d', weight: 6, opacity: 0.8 } // لون المسار أزرق غامق مثل الصورة
           }).addTo(map);
 
           updatePricesUI();
           
-          // إظهار البطاقة السفلية للسيارات
+          // إظهار السيارات والأسعار
           document.getElementById('bottomSheet').classList.add('open');
           document.getElementById('requestBtn').disabled = false;
         }
       } catch (err) { console.log('خطأ في المسار', err); }
     }
 
+    // حساب الأسعار (الخوارزمية)
     function updatePricesUI() {
-      const econPrice = Math.round(distanceKm * basePrice);
-      const famPrice = Math.round(distanceKm * (basePrice + 300));
-      const premPrice = Math.round(distanceKm * (basePrice + 700));
+      // التكسي: 1000 دينار للكيلو (كما طلبت)
+      const taxiPrice = Math.round(distanceKm * 1000);
+      // المميزة: 1500 دينار للكيلو
+      const premPrice = Math.round(distanceKm * 1500);
+      // العائلية: 1200 دينار للكيلو
+      const famPrice = Math.round(distanceKm * 1200);
 
-      document.getElementById('price-economy').innerText = econPrice.toLocaleString() + ' د.ع';
-      document.getElementById('price-family').innerText = famPrice.toLocaleString() + ' د.ع';
+      document.getElementById('price-taxi').innerText = taxiPrice.toLocaleString() + ' د.ع';
       document.getElementById('price-premium').innerText = premPrice.toLocaleString() + ' د.ع';
+      document.getElementById('price-family').innerText = famPrice.toLocaleString() + ' د.ع';
     }
 
     function selectCar(element, priceMultiplier) {
@@ -402,8 +433,9 @@
       element.classList.add('active');
     }
 
+    // طلب الرحلة
     function requestRide() {
-      if (!destinationLocation) return alert('الرجاء تحريك الخريطة لتحديد وجهتك!');
+      if (!destinationLocation) return alert('الرجاء تثبيت الوجهة أولاً!');
 
       document.getElementById('bottomSheet').classList.remove('open');
       document.getElementById('searching-overlay').style.display = 'flex';
