@@ -333,3 +333,295 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>تاكسي العراق - خريطة جوجل 🇮🇶🚕</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-light: #f8f9fa;
+      --card-bg: #ffffff;
+      --border-blue: #b3d4f0;
+      --btn-blue: #8ac0e8;
+      --text-dark: #0a192f;
+      --gold: #D4AF37;
+      --gold-gradient: linear-gradient(135deg, #F3E5AB, #D4AF37, #B8860B);
+      --danger: #e74c3c;
+      --success: #2ecc71;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-light); height: 100vh; overflow: hidden; }
+
+    /* إدارة الشاشات */
+    .screen { position: absolute; inset: 0; display: none; flex-direction: column; z-index: 10; overflow-y: auto; }
+    .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* شاشة الترحيب والدخول */
+    #welcome-screen { background: linear-gradient(to bottom, rgba(10,10,10,0.8), rgba(10,10,10,0.95)), url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop') center/cover; justify-content: center; align-items: center; padding: 30px; color: white; }
+    .logo-box { text-align: center; margin-bottom: 40px; }
+    .logo-box i { font-size: 70px; color: var(--gold); margin-bottom: 15px; }
+    .welcome-actions { width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 15px; }
+    .btn-gold { background: var(--gold-gradient); color: #000; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; border: none; cursor: pointer; text-align: center; }
+    .btn-outline-dark { background: transparent; color: white; border: 1px solid #555; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; }
+    #auth-screen { background: #0a0a0a; justify-content: center; padding: 30px; color: white; }
+    .auth-box { background: #151515; padding: 25px; border-radius: 20px; border: 1px solid #333; }
+    .input-group { margin-bottom: 15px; }
+    .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #aaa; }
+    .input-group input { width: 100%; padding: 15px; background: #1f1f1f; border: 1px solid #333; border-radius: 10px; color: white; outline: none; }
+
+    /* واجهة الأقسام */
+    #home-screen { background: var(--bg-light); padding-bottom: 80px; }
+    .header { text-align: center; padding: 20px 15px; background: white; margin-bottom: 15px; }
+    .header h1 { font-size: 22px; font-weight: 900; color: var(--text-dark); }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px; }
+    .service-card { background: var(--card-bg); border: 1.5px solid var(--border-blue); border-radius: 15px; padding: 15px 5px; text-align: center; cursor: pointer; }
+    .service-card .icon { font-size: 35px; margin-bottom: 8px; }
+    .service-card h3 { font-size: 14px; font-weight: 800; color: var(--text-dark); }
+    .wide-services { display: flex; gap: 10px; padding: 10px 15px; }
+    .wide-services .service-card { flex: 1; padding: 20px 5px; }
+    .bottom-actions { padding: 10px 15px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .btn-blue { background: #a4d3f5; color: var(--text-dark); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; }
+    .btn-outline-blue { background: transparent; color: #5a8ab8; border: 1.5px solid var(--border-blue); padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; }
+    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 75px; background: var(--btn-blue); display: flex; justify-content: space-around; align-items: center; border-radius: 25px 25px 0 0; z-index: 20; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dark); font-size: 13px; font-weight: 800; cursor: pointer; }
+
+    /* ==========================================
+       شاشة الخريطة (تصميم جوجل ماب)
+    ========================================== */
+    #map-screen { position: fixed; inset: 0; z-index: 9999; background: #e5e3df; display: none; }
+    #map { width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; }
+
+    /* شريط البحث العلوي (مطابق للصورة) */
+    .google-search-bar {
+      position: absolute; top: 20px; right: 15px; left: 15px; z-index: 10;
+      background: white; border-radius: 30px; padding: 10px 15px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    .google-search-bar .profile-icon { font-size: 24px; color: #4285F4; cursor: pointer; }
+    .google-search-bar input { flex: 1; border: none; outline: none; font-size: 16px; font-weight: 600; color: #333; }
+    .google-search-bar .mic-icon { font-size: 18px; color: #666; }
+    .google-search-bar .google-logo { width: 24px; height: 24px; }
+
+    /* تصنيفات البحث (مطاعم، وقود...) */
+    .category-chips {
+      position: absolute; top: 80px; right: 0; left: 0; z-index: 10;
+      display: flex; gap: 10px; padding: 0 15px; overflow-x: auto; scrollbar-width: none;
+    }
+    .category-chips::-webkit-scrollbar { display: none; }
+    .chip {
+      background: white; border-radius: 20px; padding: 8px 15px;
+      display: flex; align-items: center; gap: 8px; white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 14px; font-weight: 700; color: #333; cursor: pointer;
+    }
+    .chip i { color: #666; }
+
+    /* أزرار التحكم بالخريطة (الطبقات، الموقع) */
+    .map-controls { position: absolute; top: 140px; left: 15px; z-index: 10; display: flex; flex-direction: column; gap: 10px; }
+    .control-btn { width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; color: #333; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; }
+    .btn-locate-map { position: absolute; bottom: 220px; left: 15px; z-index: 10; width: 50px; height: 50px; background: #4285F4; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; box-shadow: 0 4px 10px rgba(66,133,244,0.4); cursor: pointer; }
+
+    /* الدبوس الثابت */
+    .center-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; }
+    .center-pin i { font-size: 45px; color: var(--danger); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); }
+    .center-pin-shadow { width: 12px; height: 4px; background: rgba(0,0,0,0.4); border-radius: 50%; margin-top: -4px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.5); opacity: 0.2; } }
+
+    /* البطاقة السفلية (مطابقة لتصميم جوجل) */
+    .bottom-sheet { 
+      position: absolute; bottom: 0; left: 0; right: 0; background: white; 
+      border-radius: 25px 25px 0 0; padding: 20px; z-index: 10; 
+      transition: transform 0.4s; transform: translateY(100%); 
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    }
+    .bottom-sheet.open { transform: translateY(0); }
+    .drag-handle { width: 40px; height: 4px; background: #ccc; border-radius: 10px; margin: 0 auto 15px auto; }
+    .sheet-title { font-size: 18px; font-weight: 800; color: #333; margin-bottom: 15px; text-align: center; }
+    
+    .cars-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .car-card { min-width: 100px; border: 1px solid #eee; background: #f8f9fa; border-radius: 15px; padding: 12px 8px; text-align: center; cursor: pointer; color: #333; }
+    .car-card.active { border-color: #4285F4; background: rgba(66,133,244,0.08); }
+    .car-card i { font-size: 28px; color: #333; margin-bottom: 8px; }
+    .car-card.active i { color: #4285F4; }
+    .car-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+    .car-card span { font-size: 14px; font-weight: 900; color: var(--gold); display: block; margin-top: 5px; }
+
+    /* زر الرجوع */
+    .btn-back-map { position: absolute; top: 20px; right: 15px; z-index: 11; width: 45px; height: 45px; border-radius: 50%; border: none; background: white; color: #333; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  </style>
+</head>
+<body>
+
+  <!-- شاشات النظام السابقة (ترحيب، دخول، أقسام) -->
+  <div id="welcome-screen" class="screen active">
+    <div class="logo-box"><i class="fa-solid fa-taxi"></i><h1>تاكسي العراق</h1></div>
+    <div class="welcome-actions">
+      <button class="btn-gold" onclick="showScreen('auth-screen')">تسجيل دخول</button>
+      <button class="btn-outline-dark" onclick="skipLogin()">تخطي الآن</button>
+    </div>
+  </div>
+
+  <div id="auth-screen" class="screen">
+    <div class="auth-box">
+      <h2 style="text-align: center; margin-bottom: 20px;">تسجيل الدخول</h2>
+      <div class="input-group"><label>رقم الهاتف</label><input type="tel" id="login-phone" placeholder="07XXXXXXXXX" dir="ltr"></div>
+      <button class="btn-gold" style="width: 100%;" onclick="loginUser()">متابعة</button>
+    </div>
+  </div>
+
+  <div id="home-screen" class="screen">
+    <div class="header"><h1>طلب تكسي أو مندوب 🚕</h1></div>
+    <div class="services-grid">
+      <div class="service-card" onclick="openMap('تكتك')"><div class="icon">🛺</div><h3>تكتك</h3></div>
+      <div class="service-card" onclick="openMap('مندوب')"><div class="icon">🛵</div><h3>مندوب</h3></div>
+      <div class="service-card" onclick="openMap('تكسي')"><div class="icon">🚕</div><h3>تكسي</h3></div>
+    </div>
+    <div class="bottom-actions" style="margin-top: 20px;">
+      <button class="btn-blue" onclick="logout()">تسجيل خروج</button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       شاشة الخريطة (تصميم جوجل)
+  ========================================== -->
+  <div id="map-screen">
+    <div id="map"></div>
+
+    <!-- الدبوس الثابت -->
+    <div class="center-pin"><i class="fa-solid fa-location-dot"></i><div class="center-pin-shadow"></div></div>
+
+    <!-- زر الرجوع -->
+    <button class="btn-back-map" onclick="closeMap()"><i class="fa-solid fa-arrow-right"></i></button>
+
+    <!-- شريط البحث العائم (مثل جوجل) -->
+    <div class="google-search-bar">
+      <i class="fa-solid fa-circle-user profile-icon"></i>
+      <input type="text" id="map-address" placeholder="ابحث عن محطات وقود مثلاً..." readonly>
+      <i class="fa-solid fa-microphone mic-icon"></i>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Google_Maps_icon_%282020-present%29.svg/1024px-Google_Maps_icon_%282020-present%29.svg.png" class="google-logo">
+    </div>
+
+    <!-- أيقونات التصنيفات (مطاعم، وقود...) -->
+    <div class="category-chips">
+      <div class="chip"><i class="fa-solid fa-utensils"></i> المطاعم</div>
+      <div class="chip"><i class="fa-solid fa-bed"></i> الفنادق</div>
+      <div class="chip"><i class="fa-solid fa-gas-pump"></i> وقود</div>
+      <div class="chip"><i class="fa-solid fa-mug-hot"></i> المقاهي</div>
+      <div class="chip"><i class="fa-solid fa-cart-shopping"></i> التسوق</div>
+    </div>
+
+    <!-- أزرار التحكم -->
+    <div class="map-controls">
+      <div class="control-btn"><i class="fa-solid fa-layer-group"></i></div>
+    </div>
+
+    <!-- زر تحديد الموقع الأزرق (مثل جوجل) -->
+    <button class="btn-locate-map" onclick="locateMe()"><i class="fa-solid fa-location-crosshairs"></i></button>
+
+    <!-- البطاقة السفلية لطلب السيارة -->
+    <div class="bottom-sheet" id="cars-sheet">
+      <div class="drag-handle"></div>
+      <div class="sheet-title">اختر وسيلة النقل</div>
+      <div class="cars-grid">
+        <div class="car-card active" onclick="selectCar(this)"><i class="fa-solid fa-taxi"></i><h3>تكسي</h3><span id="price-taxi">--- د.ع</span></div>
+        <div class="car-card" onclick="selectCar(this)"><i class="fa-solid fa-car"></i><h3>مميزة</h3><span id="price-premium">--- د.ع</span></div>
+      </div>
+      <button class="btn-gold" style="margin-top: 15px; width: 100%;" onclick="requestRide()">تأكيد الوجهة وطلب سيارة</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function loginUser() {
+      if (document.getElementById('login-phone').value.length < 10) return alert('أدخل رقم صحيح');
+      showScreen('home-screen');
+    }
+    function skipLogin() { showScreen('home-screen'); }
+    function logout() { showScreen('welcome-screen'); }
+
+    // ==========================================
+    // إعداد الخريطة (تحاكي شكل جوجل)
+    // ==========================================
+    let map, mapInit = false, userLoc = [33.3152, 44.3661], destLoc = null, routeLine = null;
+
+    function openMap(service) {
+      document.getElementById('map-screen').style.display = 'block';
+      document.getElementById('cars-sheet').classList.remove('open');
+      
+      if (!mapInit) {
+        // استخدام خريطة CartoDB Voyager (تشبه ألوان جوجل ماب)
+        map = L.map('map', { zoomControl: false, attributionControl: false }).setView(userLoc, 15);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((pos) => {
+            userLoc = [pos.coords.latitude, pos.coords.longitude];
+            map.setView(userLoc, 16);
+          });
+        }
+
+        // حدث تحريك الخريطة لتحديث العنوان
+        map.on('moveend', async () => {
+          const center = map.getCenter();
+          destLoc = [center.lat, center.lng];
+          document.getElementById('map-address').value = "جاري تحديد العنوان...";
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&accept-language=ar`);
+            const data = await res.json();
+            document.getElementById('map-address').value = data.display_name ? data.display_name.split(',')[0] : "موقع محدد";
+            
+            // محاكاة حساب السعر فوراً
+            document.getElementById('price-taxi').innerText = Math.floor(Math.random() * 5000 + 3000).toLocaleString() + ' د.ع';
+            document.getElementById('price-premium').innerText = Math.floor(Math.random() * 8000 + 5000).toLocaleString() + ' د.ع';
+            
+            // إظهار البطاقة السفلية تلقائياً
+            document.getElementById('cars-sheet').classList.add('open');
+
+          } catch (e) {
+            document.getElementById('map-address').value = "موقع محدد على الخريطة";
+          }
+        });
+        mapInit = true;
+      } else {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
+    }
+
+    function closeMap() {
+      document.getElementById('map-screen').style.display = 'none';
+    }
+
+    function locateMe() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          map.flyTo([pos.coords.latitude, pos.coords.longitude], 16);
+        });
+      }
+    }
+
+    function selectCar(el) {
+      document.querySelectorAll('.car-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function requestRide() {
+      alert('تم تأكيد الوجهة! جاري البحث عن سائق قريب...');
+      closeMap();
+    }
+  </script>
+</body>
+</html>
