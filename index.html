@@ -14,7 +14,7 @@
       --bg-dark: #0a0a0a;
       --card-bg: #141414;
       --gold: #D4AF37;
-      --gold-glow: rgba(212,175,55,0.3);
+      --gold-glow: rgba(212,175,55,0.5);
       --text-light: #ffffff;
       --text-muted: #888;
       --secondary: #00C9A7;
@@ -69,19 +69,51 @@
     
     .btn-back { position: absolute; top: 20px; right: 20px; z-index: 20; width: 45px; height: 45px; border-radius: 50%; border: none; background: white; color: var(--bg-dark); font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; justify-content: center; align-items: center; }
 
-    .search-container { position: absolute; top: 20px; right: 80px; left: 20px; z-index: 20; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 15px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-    .search-container i { color: var(--secondary); font-size: 18px; }
+    .search-container { 
+      position: absolute; top: 20px; right: 80px; left: 20px; z-index: 20; 
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); 
+      border-radius: 15px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; 
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2); transition: 0.3s;
+    }
+    .search-container i { color: var(--secondary); font-size: 18px; cursor: pointer; }
     .search-container input { border: none; background: transparent; outline: none; flex: 1; font-size: 15px; font-weight: 700; color: #333; font-family: inherit; }
 
-    .center-pin-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 10; pointer-events: none; display: flex; flex-direction: column; align-items: center; }
-    .center-pin-container i { font-size: 40px; color: var(--gold); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); animation: float 2s ease-in-out infinite; }
-    .center-pin-shadow { width: 15px; height: 5px; background: rgba(0,0,0,0.3); border-radius: 50%; margin-top: -5px; animation: shadow-pulse 2s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    @keyframes shadow-pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.5); opacity: 0.2; } }
+    /* تصميم الدبوس العملاق الثابت في منتصف الشاشة */
+    .center-pin-container { 
+      position: absolute; top: 50%; left: 50%; 
+      transform: translate(-50%, -100%); 
+      z-index: 10; pointer-events: none; 
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      height: 60px;
+    }
+    .center-pin-container i { 
+      font-size: 55px; color: #D4AF37; /* لون ذهبي */
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5)); 
+      animation: pin-bounce 1.5s ease-in-out infinite; 
+    }
+    .pin-base {
+      width: 14px; height: 6px; background: rgba(0,0,0,0.4); border-radius: 50%;
+      margin-top: -5px; animation: base-pulse 1.5s ease-in-out infinite;
+    }
 
-    .btn-locate { position: absolute; bottom: 350px; left: 20px; z-index: 20; width: 50px; height: 50px; border-radius: 50%; border: none; background: white; color: var(--secondary); font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; }
+    @keyframes pin-bounce { 
+      0%, 100% { transform: translateY(0); } 
+      50% { transform: translateY(-12px); } 
+    }
+    @keyframes base-pulse { 
+      0%, 100% { transform: scale(1); opacity: 0.8; } 
+      50% { transform: scale(1.6); opacity: 0.2; } 
+    }
 
-    .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 25px 25px 0 0; padding: 20px; z-index: 20; transition: transform 0.4s; transform: translateY(100%); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
+    .btn-locate { position: absolute; bottom: 350px; left: 20px; z-index: 20; width: 50px; height: 50px; border-radius: 50%; border: none; background: white; color: var(--secondary); font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s; }
+    .btn-locate:active { transform: scale(0.9); }
+
+    .bottom-sheet { 
+      position: absolute; bottom: 0; left: 0; right: 0; background: white; 
+      border-radius: 25px 25px 0 0; padding: 20px; z-index: 20; 
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+      transform: translateY(100%); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); 
+    }
     .bottom-sheet.open { transform: translateY(0); }
     .drag-handle { width: 50px; height: 5px; background: #ddd; border-radius: 10px; margin: 0 auto 15px auto; }
     
@@ -101,7 +133,7 @@
     #searching-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.9); z-index: 50; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; backdrop-filter: blur(5px); }
     .radar { width: 150px; height: 150px; border-radius: 50%; border: 3px solid rgba(0,201,167,0.3); position: relative; margin-bottom: 30px; display: flex; justify-content: center; align-items: center; }
     .radar::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; background: var(--secondary); opacity: 0.3; animation: pulse 2s infinite; }
-    .radar i { font-size: 50px; color: var(--secondary); z-index: 2; animation: bounce 1s infinite; }
+    .radar i { font-size: 50px; color: var(--secondary); z-index: 2; animation: pin-bounce 1s infinite; }
     @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.5); opacity: 0; } }
   </style>
 </head>
@@ -144,22 +176,25 @@
   <div id="map-screen">
     <div id="map"></div>
 
-    <!-- دبوس التثبيت -->
+    <!-- الدبوس الذهبي الثابت في المنتصف -->
     <div class="center-pin-container">
       <i class="fa-solid fa-location-dot"></i>
-      <div class="center-pin-shadow"></div>
+      <div class="pin-base"></div>
     </div>
 
+    <!-- زر الرجوع -->
     <button class="btn-back" onclick="closeMap()"><i class="fa-solid fa-arrow-right"></i></button>
 
-    <!-- شريط البحث (للكتابة أو لعرض العنوان الحالي) -->
+    <!-- شريط البحث -->
     <div class="search-container">
-      <i class="fa-solid fa-magnifying-glass" onclick="searchLocation()" style="cursor: pointer;"></i>
-      <input type="text" id="addressDisplay" placeholder="اكتب وجهتك أو حرك الخريطة..." onkeypress="handleSearch(event)">
+      <i class="fa-solid fa-magnifying-glass" onclick="searchLocation()"></i>
+      <input type="text" id="addressDisplay" placeholder="حرك الخريطة أو اكتب وجهتك..." onkeypress="handleSearch(event)">
     </div>
 
+    <!-- زر تحديد الموقع الحالي -->
     <button class="btn-locate" onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i></button>
 
+    <!-- البطاقة السفلية للسيارات -->
     <div class="bottom-sheet" id="bottomSheet">
       <div class="drag-handle"></div>
       <div class="section-title" id="mapTitle"><i class="fa-solid fa-car-side" style="color: var(--secondary);"></i> اختر وسيلة النقل</div>
@@ -181,6 +216,7 @@
       </button>
     </div>
 
+    <!-- شاشة البحث عن سائق -->
     <div id="searching-overlay">
       <div class="radar"><i class="fa-solid fa-car"></i></div>
       <h2>جاري البحث عن سائق قريب...</h2>
@@ -200,6 +236,7 @@
     let distanceKm = 0;
     let isLocating = false;
     let mapInitialized = false;
+    let searchTimeout = null; // متغير لمنع طلبات البحث السريعة
 
     function openMap(serviceType) {
       document.getElementById('home-screen').style.display = 'none';
@@ -224,7 +261,7 @@
       map = L.map('map', { zoomControl: false, attributionControl: false }).setView([33.3152, 44.3661], 14);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-      // عند توقف الخريطة، نقوم بتحديث العنوان بناءً على مركز الدبوس
+      // عند انتهاء تحريك الخريطة
       map.on('moveend', onMapMoveEnd);
       locateUser();
     }
@@ -260,51 +297,64 @@
       }
     }
 
-    // عند تحريك الخريطة، نقوم بجلب اسم العنوان (Reverse Geocoding)
-    async function onMapMoveEnd() {
+    // دالة تثبيت الوجهة
+    function onMapMoveEnd() {
       const center = map.getCenter();
       destinationLocation = [center.lat, center.lng];
       
+      // إظهار كلمة "جاري..."
       document.getElementById('addressDisplay').value = "جاري تحديد العنوان...";
-      
-      try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&zoom=18&addressdetails=1`);
-        const data = await response.json();
 
-        if (data && data.display_name) {
-          const parts = data.display_name.split(',');
-          const shortAddress = parts[0] + (parts[1] ? '، ' + parts[1] : '');
-          document.getElementById('addressDisplay').value = shortAddress;
+      // إلغاء أي طلب سابق لتجنب الحظر
+      if (searchTimeout) clearTimeout(searchTimeout);
+
+      // الانتظار ثانية واحدة بعد توقف الخريطة قبل طلب العنوان
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&zoom=18&addressdetails=1&accept-language=ar`);
+          const data = await response.json();
+
+          if (data && data.display_name) {
+            const parts = data.display_name.split(',');
+            // جلب أول جزئين من العنوان ليكون مختصراً ومفيداً
+            const shortAddress = parts[0] + (parts[1] ? '، ' + parts[1] : '');
+            document.getElementById('addressDisplay').value = shortAddress;
+          } else {
+            document.getElementById('addressDisplay').value = "موقع محدد على الخريطة";
+          }
           
+          // رسم المسار فوراً بعد تحديد العنوان
+          if (userLocation) drawRoute(userLocation, destinationLocation);
+
+        } catch (err) {
+          // في حال فشل الاتصال، لا نعرض "خطأ"، بل نعرض "موقع محدد"
+          document.getElementById('addressDisplay').value = "موقع محدد على الخريطة";
           if (userLocation) drawRoute(userLocation, destinationLocation);
         }
-      } catch (err) {
-        document.getElementById('addressDisplay').value = "تعذر تحديد العنوان";
-      }
+      }, 800); // الانتظار 800 ملي ثانية
     }
 
-    // البحث عن مكان محدد وكتابته في شريط البحث
+    // البحث اليدوي في الشريط العلوي
     async function handleSearch(event) {
-      if (event.key === 'Enter') {
-        searchLocation();
-      }
+      if (event.key === 'Enter') searchLocation();
     }
 
     async function searchLocation() {
       const query = document.getElementById('addressDisplay').value;
-      if (!query || query.includes("جاري")) return;
+      if (!query || query === "جاري تحديد العنوان..." || query === "موقع محدد على الخريطة") return;
+
+      document.activeElement.blur(); // إخفاء لوحة المفاتيح
 
       try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' العراق')}`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' العراق')}&accept-language=ar`);
         const data = await response.json();
 
         if (data.length > 0) {
           const lat = parseFloat(data[0].lat);
           const lon = parseFloat(data[0].lon);
           
-          // تحريك الخريطة إلى المكان المبحوث عنه
+          // تحريك الخريطة للمكان المبحوث عنه
           map.flyTo([lat, lon], 16);
-          document.getElementById('addressDisplay').blur(); // إخفاء لوحة المفاتيح
         } else {
           alert('لم يتم العثور على المكان. جرب كتابة اسم منطقة أخرى.');
         }
@@ -329,6 +379,8 @@
           }).addTo(map);
 
           updatePricesUI();
+          
+          // إظهار البطاقة السفلية للسيارات
           document.getElementById('bottomSheet').classList.add('open');
           document.getElementById('requestBtn').disabled = false;
         }
