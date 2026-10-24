@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>تاكسي العراق - Premium 🇮🇶🚕</title>
+  <title>تاكسي العراق 🇮🇶🚕</title>
   
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,163 +11,160 @@
   
   <style>
     :root {
+      /* ألوان واجهة الأقسام (الفاتحة - مطابقة للصورة) */
+      --bg-light: #f8f9fa;
+      --card-bg: #ffffff;
+      --border-blue: #b3d4f0;
+      --btn-blue: #8ac0e8;
+      --text-dark: #0a192f;
+      
+      /* ألوان الخريطة ولوحات التحكم (الداكنة) */
       --bg-dark: #0a0a0a;
-      --bg-card: #141414;
-      --bg-card-light: #1f1f1f;
       --gold: #D4AF37;
       --gold-gradient: linear-gradient(135deg, #F3E5AB, #D4AF37, #B8860B);
-      --text-light: #ffffff;
-      --text-muted: #888;
       --danger: #e74c3c;
       --success: #2ecc71;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg-dark); height: 100vh; overflow: hidden; color: var(--text-light); }
+    body { background: var(--bg-light); height: 100vh; overflow: hidden; }
 
     /* ==========================================
-       إدارة الشاشات العامة
+       إدارة الشاشات
     ========================================== */
-    .screen { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg-dark); z-index: 10; overflow-y: auto; }
+    .screen { position: absolute; inset: 0; display: none; flex-direction: column; z-index: 10; overflow-y: auto; }
     .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ==========================================
-       الشاشة الأولى: الترحيب (مطابقة للصورة 1)
+       الشاشة الترحيبية وتسجيل الدخول (داكنة وفخمة)
     ========================================== */
     #welcome-screen { 
-      justify-content: flex-end; padding: 30px; 
-      background: linear-gradient(to bottom, rgba(10,10,10,0.7), rgba(10,10,10,0.95)), url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop') center/cover;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.8), rgba(10,10,10,0.95)), url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop') center/cover;
+      justify-content: center; align-items: center; padding: 30px; color: white;
     }
-    .logo-box { text-align: center; margin-bottom: auto; padding-top: 50px; }
-    .logo-box i { font-size: 80px; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px rgba(212,175,55,0.4)); }
-    .logo-box h1 { font-size: 32px; font-weight: 900; margin-top: 10px; }
-    .logo-box p { color: var(--text-muted); font-size: 14px; }
+    .logo-box { text-align: center; margin-bottom: 40px; }
+    .logo-box i { font-size: 70px; color: var(--gold); margin-bottom: 15px; }
+    .logo-box h1 { font-size: 28px; font-weight: 900; }
+    .welcome-actions { width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 15px; }
+    .btn-gold { background: var(--gold-gradient); color: #000; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; border: none; cursor: pointer; text-align: center; }
+    .btn-outline-dark { background: transparent; color: white; border: 1px solid #555; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; }
     
-    .welcome-actions { display: flex; flex-direction: column; gap: 15px; }
-    .btn-gold { background: var(--gold-gradient); color: #000; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; border: none; cursor: pointer; text-align: center; box-shadow: 0 5px 15px rgba(212,175,55,0.2); }
-    .btn-outline { background: transparent; color: var(--text-light); border: 1px solid #333; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; }
-    .btn-text { background: none; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; margin-top: 10px; }
+    /* شاشة تسجيل الدخول */
+    #auth-screen { background: var(--bg-dark); justify-content: center; padding: 30px; color: white; }
+    .auth-box { background: #151515; padding: 25px; border-radius: 20px; border: 1px solid #333; }
+    .input-group { margin-bottom: 15px; }
+    .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #aaa; }
+    .input-group input { width: 100%; padding: 15px; background: #1f1f1f; border: 1px solid #333; border-radius: 10px; color: white; outline: none; }
+    .input-group input:focus { border-color: var(--gold); }
 
     /* ==========================================
-       الشاشة الرئيسية: الخريطة (مطابقة للصورة 2)
+       واجهة الأقسام الرئيسية (مطابقة للصورة تماماً)
     ========================================== */
-    #home-screen { padding: 0; }
-    #map { position: absolute; inset: 0; z-index: 1; background: #222; } /* خريطة داكنة */
-
-    .top-bar { position: absolute; top: 20px; right: 20px; left: 20px; z-index: 10; display: flex; justify-content: space-between; align-items: flex-start; }
-    .profile-btn { display: flex; align-items: center; gap: 10px; background: rgba(20,20,20,0.8); backdrop-filter: blur(10px); padding: 10px 15px; border-radius: 30px; border: 1px solid #333; }
-    .profile-btn img { width: 35px; height: 35px; border-radius: 50%; }
-    .wallet-card { background: var(--bg-card); padding: 15px; border-radius: 15px; border: 1px solid #333; display: flex; flex-direction: column; gap: 5px; width: 140px; }
-    .wallet-card span { font-size: 12px; color: var(--text-muted); }
-    .wallet-card h3 { font-size: 18px; font-weight: 900; color: var(--gold); }
-    .wallet-card button { background: var(--gold); border: none; border-radius: 5px; padding: 3px; font-size: 10px; font-weight: bold; cursor: pointer; }
-
-    .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: 30px 30px 0 0; padding: 20px; z-index: 10; border-top: 1px solid #333; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
-    .input-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot.green { background: var(--success); }
-    .dot.red { background: var(--danger); }
-    .input-box { flex: 1; background: var(--bg-card-light); padding: 12px; border-radius: 10px; font-size: 14px; color: var(--text-light); border: 1px solid #333; outline: none; }
+    #home-screen { background: var(--bg-light); padding-bottom: 80px; }
     
-    .cars-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
-    .car-card { min-width: 80px; background: var(--bg-card-light); border: 1px solid #333; border-radius: 15px; padding: 10px; text-align: center; cursor: pointer; transition: 0.3s; }
-    .car-card.active { border-color: var(--gold); background: rgba(212,175,55,0.1); }
-    .car-card i { font-size: 24px; color: var(--gold); margin-bottom: 5px; }
-    .car-card h4 { font-size: 12px; margin-bottom: 2px; }
-    .car-card span { font-size: 11px; color: var(--text-muted); }
+    .header { text-align: center; padding: 20px 15px; background: white; margin-bottom: 15px; }
+    .header h1 { font-size: 22px; font-weight: 900; color: var(--text-dark); display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .header p { color: #666; font-size: 13px; margin-top: 5px; font-weight: 600; }
+
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px; }
+    
+    .service-card { 
+      background: var(--card-bg); border: 1.5px solid var(--border-blue); 
+      border-radius: 15px; padding: 15px 5px; text-align: center; cursor: pointer; 
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      transition: 0.2s;
+    }
+    .service-card:active { transform: scale(0.95); background: #f0f7ff; }
+    .service-card .icon { font-size: 35px; margin-bottom: 8px; }
+    .service-card h3 { font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+    .service-card p { font-size: 10px; color: #555; line-height: 1.4; }
+
+    .wide-services { display: flex; gap: 10px; padding: 10px 15px; }
+    .wide-services .service-card { flex: 1; padding: 20px 5px; }
+    .wide-services .icon-p { background: #5a8ab8; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+
+    .bottom-actions { padding: 10px 15px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .btn-blue { background: #a4d3f5; color: var(--text-dark); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; gap: 8px; align-items: center; }
+    .btn-outline-blue { background: transparent; color: #5a8ab8; border: 1.5px solid var(--border-blue); padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; gap: 8px; align-items: center; }
+
+    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 75px; background: var(--btn-blue); display: flex; justify-content: space-around; align-items: center; border-radius: 25px 25px 0 0; z-index: 20; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dark); font-size: 13px; font-weight: 800; cursor: pointer; }
+    .nav-item i { font-size: 24px; color: var(--text-dark); }
 
     /* ==========================================
-       الدبوس الثابت للخريطة
+       شاشة الخريطة (تفتح عند اختيار خدمة)
     ========================================== */
+    #map-screen { position: fixed; inset: 0; z-index: 9999; background: #222; display: none; }
+    #map { width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; }
+    
     .center-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; }
-    .center-pin i { font-size: 45px; color: var(--gold); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
-    .center-pin-shadow { width: 12px; height: 4px; background: rgba(0,0,0,0.5); border-radius: 50%; margin-top: -4px; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5); opacity: 0.5; } }
+    .center-pin i { font-size: 50px; color: var(--gold); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+    .center-pin-shadow { width: 15px; height: 5px; background: rgba(0,0,0,0.5); border-radius: 50%; margin-top: -5px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.5); opacity: 0.2; } }
 
-    /* ==========================================
-       القائمة الجانبية (مطابقة للصورة 4)
-    ========================================== */
-    #drawer { position: absolute; top: 0; right: -300px; width: 280px; height: 100%; background: var(--bg-card); z-index: 100; transition: 0.3s; border-left: 1px solid #333; display: flex; flex-direction: column; }
-    #drawer.open { right: 0; }
-    .drawer-header { padding: 30px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
-    .drawer-header img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--gold); }
-    .drawer-menu { padding: 20px; display: flex; flex-direction: column; gap: 5px; }
-    .menu-item { padding: 15px; display: flex; align-items: center; gap: 15px; color: var(--text-light); font-size: 15px; cursor: pointer; border-radius: 10px; transition: 0.2s; }
-    .menu-item:hover { background: var(--bg-card-light); color: var(--gold); }
-    .menu-item i { width: 20px; color: var(--gold); }
-    .drawer-footer { margin-top: auto; padding: 20px; text-align: center; }
-
-    /* ==========================================
-       لوحة السائق (مطابقة للصورة 5)
-    ========================================== */
-    #driver-dashboard-screen { background: var(--bg-dark); }
-    .driver-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
-    .status-toggle { display: flex; align-items: center; gap: 10px; background: var(--bg-card); padding: 8px 15px; border-radius: 20px; border: 1px solid #333; }
-    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted); }
-    .status-toggle.active .status-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
+    .search-bar { position: absolute; top: 20px; right: 80px; left: 20px; z-index: 10; background: #1f1f1f; border: 1px solid #333; border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); color: white; }
+    .search-bar i { color: var(--gold); font-size: 18px; }
+    .search-bar input { border: none; background: transparent; outline: none; flex: 1; color: white; font-weight: 700; font-size: 15px; }
+    .btn-back-map { position: absolute; top: 20px; right: 20px; z-index: 10; width: 45px; height: 45px; border-radius: 50%; border: none; background: #1f1f1f; color: var(--gold); font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; justify-content: center; align-items: center; }
     
-    .earnings-card { background: linear-gradient(135deg, #1f1f1f, #0a0a0a); margin: 20px; padding: 25px; border-radius: 20px; border: 1px solid #333; text-align: center; }
-    .earnings-card h2 { color: var(--gold); font-size: 36px; font-weight: 900; margin: 10px 0; }
-    .earnings-stats { display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
-    .stat-item h4 { font-size: 18px; color: var(--text-light); }
-    .stat-item p { font-size: 12px; color: var(--text-muted); }
-
-    .incoming-ride { background: var(--bg-card); margin: 20px; border-radius: 20px; border: 1px solid var(--gold); overflow: hidden; display: none; }
-    .incoming-ride.active { display: block; }
-    .ride-header { background: rgba(212,175,55,0.1); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-    .ride-header h4 { color: var(--gold); font-size: 14px; }
-    .ride-details { padding: 20px; }
-    .ride-point { display: flex; gap: 10px; margin-bottom: 15px; font-size: 14px; }
-    .ride-point i { margin-top: 3px; }
-    .ride-price { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 15px; margin-top: 15px; }
-    .ride-price h3 { color: var(--gold); font-size: 22px; }
-    .btn-accept { background: var(--gold); color: black; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 900; cursor: pointer; }
+    .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: #141414; border-radius: 25px 25px 0 0; padding: 20px; z-index: 10; transition: transform 0.4s; transform: translateY(100%); border-top: 1px solid #333; }
+    .bottom-sheet.open { transform: translateY(0); }
+    .drag-handle { width: 50px; height: 5px; background: #555; border-radius: 10px; margin: 0 auto 15px auto; }
+    .cars-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .car-card { min-width: 100px; border: 1px solid #333; background: #1f1f1f; border-radius: 15px; padding: 12px 8px; text-align: center; cursor: pointer; color: white; }
+    .car-card.active { border-color: var(--gold); background: rgba(212,175,55,0.1); }
+    .car-card i { font-size: 28px; color: var(--gold); margin-bottom: 8px; }
+    .car-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+    .car-card span { font-size: 14px; font-weight: 900; color: var(--gold); display: block; margin-top: 5px; }
 
     /* ==========================================
-       صفحة الانضمام كسائق (مطابقة للصورة 6)
+       شاشة الانضمام كسائق
     ========================================== */
-    #driver-register-screen { background: radial-gradient(circle at top, #1a1a1a 0%, #0a0a0a 100%); }
-    .crown-header { text-align: center; padding: 40px 20px; }
+    #driver-register-screen { background: var(--bg-dark); color: white; padding-bottom: 20px; }
+    .crown-header { text-align: center; padding: 30px 20px; }
     .crown-header i { font-size: 60px; color: var(--gold); margin-bottom: 15px; }
     .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
-    .benefit-card { background: var(--bg-card); border: 1px solid #333; border-radius: 15px; padding: 20px; text-align: center; }
+    .benefit-card { background: #151515; border: 1px solid #333; border-radius: 15px; padding: 20px; text-align: center; }
     .benefit-card i { font-size: 30px; color: var(--gold); margin-bottom: 10px; }
     .benefit-card h4 { font-size: 14px; margin-bottom: 5px; }
-    .benefit-card p { font-size: 12px; color: var(--text-muted); }
-    
-    .form-container { padding: 20px; }
-    .input-group { margin-bottom: 15px; }
-    .input-group label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
-    .input-group input, .input-group select { width: 100%; padding: 15px; background: var(--bg-card); border: 1px solid #333; border-radius: 12px; color: white; outline: none; font-family: inherit; }
-    .input-group input:focus, .input-group select:focus { border-color: var(--gold); }
+    .benefit-card p { font-size: 12px; color: #888; }
+    .form-container { padding: 0 20px; }
 
-    /* ==========================================
-       شاشات المصادقة (تسجيل الدخول)
-    ========================================== */
-    #auth-screen { justify-content: center; padding: 30px; }
-    .auth-box { background: var(--bg-card); padding: 30px; border-radius: 20px; border: 1px solid #333; }
+    /* لوحة السائق */
+    #driver-dashboard-screen { background: var(--bg-dark); color: white; }
+    .driver-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
+    .status-toggle { display: flex; align-items: center; gap: 10px; background: #1f1f1f; padding: 8px 15px; border-radius: 20px; border: 1px solid #333; cursor: pointer; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #888; }
+    .status-toggle.active .status-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
+    .earnings-card { background: #151515; margin: 20px; padding: 25px; border-radius: 20px; border: 1px solid #333; text-align: center; }
+    .earnings-card h2 { color: var(--gold); font-size: 36px; font-weight: 900; margin: 10px 0; }
+    .incoming-ride { background: #151515; margin: 20px; border-radius: 20px; border: 1px solid var(--gold); display: none; }
+    .incoming-ride.active { display: block; }
+    .ride-header { background: rgba(212,175,55,0.1); padding: 15px; border-bottom: 1px solid #333; }
+    .ride-details { padding: 20px; }
+    .btn-accept { background: var(--gold); color: black; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 900; cursor: pointer; }
 
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- 1. الشاشة الترحيبية (مطابقة للصورة 1) -->
+  <!-- 1. شاشة الترحيب -->
   <div id="welcome-screen" class="screen active">
     <div class="logo-box">
-      <i class="fa-solid fa-dove"></i>
+      <i class="fa-solid fa-taxi"></i>
       <h1>تاكسي العراق</h1>
       <p>تنقل بأمان .. تصل براحة</p>
     </div>
     <div class="welcome-actions">
       <button class="btn-gold" onclick="showScreen('auth-screen')">تسجيل دخول</button>
-      <button class="btn-outline" onclick="showScreen('auth-screen')">إنشاء حساب جديد</button>
-      <button class="btn-text" onclick="skipLogin()">تخطي الآن</button>
+      <button class="btn-outline-dark" onclick="showScreen('auth-screen')">إنشاء حساب جديد</button>
+      <button class="btn-outline-dark" style="border: none; color: #888;" onclick="skipLogin()">تخطي الآن</button>
     </div>
   </div>
 
-  <!-- شاشة المصادقة OTP -->
+  <!-- 2. شاشة تسجيل الدخول -->
   <div id="auth-screen" class="screen">
     <div class="auth-box">
       <h2 style="text-align: center; margin-bottom: 20px;">تسجيل الدخول</h2>
@@ -176,113 +173,105 @@
     </div>
   </div>
 
-  <!-- 2. الشاشة الرئيسية (مطابقة للصورة 2) -->
+  <!-- 3. واجهة الزبون (الأقسام) - مطابقة للصورة -->
   <div id="home-screen" class="screen">
-    <div id="map"></div>
-
-    <!-- الدبوس الثابت -->
-    <div class="center-pin">
-      <i class="fa-solid fa-location-dot"></i>
-      <div class="center-pin-shadow"></div>
+    <div class="header">
+      <h1>طلب تكسي أو مندوب 🚕</h1>
+      <p>اختر نوع الخدمة التي تحتاجها</p>
     </div>
 
-    <!-- الشريط العلوي -->
-    <div class="top-bar">
-      <div class="profile-btn" onclick="toggleDrawer()">
-        <i class="fa-solid fa-bars" style="color: var(--gold); font-size: 20px;"></i>
-        <span style="font-weight: bold; font-size: 14px;">مرحباً، <span id="user-name-display">علي</span></span>
+    <div class="services-grid">
+      <div class="service-card" onclick="openMap('تكتك')">
+        <div class="icon">🛺</div><h3>تكتك</h3><p>اطلب تكتك وحدد موقع الانطلاق والوجهة</p>
       </div>
-      <div class="wallet-card">
-        <span>رصيد المحفظة</span>
-        <h3>75,000 <span style="font-size: 12px;">د.ع</span></h3>
-        <button>+ شحن</button>
+      <div class="service-card" onclick="openMap('مندوب')">
+        <div class="icon">🛵</div><h3>مندوب</h3><p>اطلب مندوب لاستلام أو توصيل طلبك</p>
+      </div>
+      <div class="service-card" onclick="openMap('تكسي')">
+        <div class="icon">🚕</div><h3>تكسي</h3><p>اطلب سيارة وحدد موقع الانطلاق والوجهة</p>
+      </div>
+      <div class="service-card" onclick="openMap('خط الطلاب')">
+        <div class="icon">🎒</div><h3>خط الطلاب</h3><p>شوف الخطوط أو أضف طلب طالب لانطلاق والوقت</p>
+      </div>
+      <div class="service-card" onclick="openMap('سيارة حمل')">
+        <div class="icon">🚚</div><h3>سيارة حمل</h3><p>اطلب سيارة حمل وحدد الاستلام والتسليم وتابع الطلب</p>
+      </div>
+      <div class="service-card" onclick="openMap('الستونة')">
+        <div class="icon">🛻</div><h3>الستونة</h3><p>اطلب ستونة وحدد الاستلام والتسليم وتابع الطلب</p>
       </div>
     </div>
 
-    <!-- البطاقة السفلية -->
-    <div class="bottom-sheet">
-      <div class="input-row">
-        <div class="dot green"></div>
-        <input type="text" class="input-box" placeholder="من أين تنطلق؟" value="موقعي الحالي" readonly>
+    <div class="wide-services">
+      <div class="service-card" onclick="openMap('الكراج')">
+        <div class="icon-p">P</div><h3>الكراج الموحد</h3><p>شوف مواقع الكراج أو أضف طلبك حتى يقبله سائق من الكراج</p>
       </div>
-      <div class="input-row">
-        <div class="dot red"></div>
-        <input type="text" class="input-box" id="dest-input" placeholder="إلى أين وجهتك؟ (حرك الخريطة)" readonly>
+      <div class="service-card" onclick="openMap('خط الموظفين')">
+        <div class="icon">👨‍💼</div><h3>خط الموظفين</h3><p>شوف الخطوط أو أضف طلب موظف بالمكان والوقت حتى يقبله سائق</p>
       </div>
-      
-      <div class="cars-grid">
-        <div class="car-card active">
-          <i class="fa-solid fa-car-side"></i>
-          <h4>اقتصادي</h4>
-          <span id="price-eco">---</span>
-        </div>
-        <div class="car-card">
-          <i class="fa-solid fa-car"></i>
-          <h4>VIP</h4>
-          <span id="price-vip">---</span>
-        </div>
-        <div class="car-card">
-          <i class="fa-solid fa-taxi"></i>
-          <h4>XL</h4>
-          <span id="price-xl">---</span>
-        </div>
-      </div>
-
-      <button class="btn-gold" style="width: 100%;" onclick="confirmDestination()">تأكيد الوجهة وطلب سيارة</button>
     </div>
 
-    <!-- القائمة الجانبية (Drawer) -->
-    <div id="drawer">
-      <div class="drawer-header">
-        <img src="https://i.pravatar.cc/150?img=11" alt="Profile">
-        <div>
-          <h3 style="font-size: 16px;" id="drawer-name">علي حسين</h3>
-          <p style="font-size: 12px; color: var(--gold);">عضو مميز</p>
-        </div>
-      </div>
-      <div class="drawer-menu">
-        <div class="menu-item"><i class="fa-solid fa-user"></i> ملفي الشخصي</div>
-        <div class="menu-item"><i class="fa-solid fa-wallet"></i> المحفظة (75,000 د.ع)</div>
-        <div class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> رحلاتي</div>
-        <div class="menu-item"><i class="fa-solid fa-heart"></i> المواقع المفضلة</div>
-        <div class="menu-item" onclick="showScreen('driver-register-screen')"><i class="fa-solid fa-id-card"></i> انضم كسائق</div>
-        <div class="menu-item" onclick="openDriverDashboard()"><i class="fa-solid fa-steering-wheel"></i> لوحة السائق</div>
-        <div class="menu-item" style="color: var(--danger);" onclick="logout()"><i class="fa-solid fa-right-from-bracket" style="color: var(--danger);"></i> تسجيل خروج</div>
-      </div>
-      <div class="drawer-footer">
-        <p style="color: var(--text-muted); font-size: 12px;">الإصدار 1.0.0</p>
-      </div>
+    <div class="bottom-actions">
+      <button class="btn-blue" onclick="openDriverDashboard()">فتح واجهة السائق 🚕</button>
+      <button class="btn-outline-blue" onclick="showScreen('driver-register-screen')">تسجيل سائق / مندوب / ستونة / حمل 📝</button>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="showScreen('admin-screen')"><i class="fa-solid fa-phone"></i><span>اتصل بنا</span></div>
+      <div class="nav-item"><i class="fa-solid fa-border-all"></i><span>الأقسام</span></div>
+      <div class="nav-item" onclick="logout()"><i class="fa-solid fa-house"></i><span>الرئيسية</span></div>
     </div>
   </div>
 
-  <!-- 3. صفحة الانضمام كسائق (مطابقة للصورة 6) -->
+  <!-- 4. شاشة الخريطة -->
+  <div id="map-screen">
+    <div id="map"></div>
+    <div class="center-pin"><i class="fa-solid fa-location-dot"></i><div class="center-pin-shadow"></div></div>
+    <button class="btn-back-map" onclick="closeMap()"><i class="fa-solid fa-arrow-right"></i></button>
+    
+    <div class="search-bar">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="map-address" placeholder="حرك الخريطة لتحديد الوجهة..." readonly>
+    </div>
+
+    <div class="bottom-sheet" id="cars-sheet">
+      <div class="drag-handle"></div>
+      <h3 style="color: white; margin-bottom: 15px;">اختر وسيلة النقل</h3>
+      <div class="cars-grid">
+        <div class="car-card active" onclick="selectCar(this)"><i class="fa-solid fa-taxi"></i><h3>تكسي</h3><span id="price-taxi">--- د.ع</span></div>
+        <div class="car-card" onclick="selectCar(this)"><i class="fa-solid fa-car"></i><h3>مميزة</h3><span id="price-premium">--- د.ع</span></div>
+      </div>
+      <button class="btn-gold" style="margin-top: 15px; width: 100%;" onclick="requestRide()">تأكيد الطلب</button>
+    </div>
+  </div>
+
+  <!-- 5. شاشة الانضمام كسائق -->
   <div id="driver-register-screen" class="screen">
     <div class="crown-header">
       <i class="fa-solid fa-crown"></i>
       <h2>انضم كسائق</h2>
-      <p style="color: var(--text-muted); font-size: 14px;">كن جزءاً من عائلة تاكسي العراق</p>
+      <p style="color: #888; font-size: 14px;">كن جزءاً من عائلة تاكسي العراق</p>
     </div>
-    
     <div class="benefits-grid">
       <div class="benefit-card"><i class="fa-solid fa-sack-dollar"></i><h4>أرباح ممتازة</h4><p>دخل إضافي يومي</p></div>
       <div class="benefit-card"><i class="fa-solid fa-clock"></i><h4>مرونة بالعمل</h4><p>اختَر أوقاتك</p></div>
       <div class="benefit-card"><i class="fa-solid fa-headset"></i><h4>دعم مستمر</h4><p>نحن معك دائماً</p></div>
       <div class="benefit-card"><i class="fa-solid fa-wallet"></i><h4>سحب فوري</h4><p>لأرباحك في أي وقت</p></div>
     </div>
-
     <div class="form-container">
       <div class="input-group">
         <label>نوع المركبة</label>
-        <select id="drv-type"><option value="taxi">🚕 تكسي</option><option value="vip">🚘 VIP</option><option value="tuktuk">🛺 تكتك</option></select>
+        <select id="drv-type" style="width:100%; padding:15px; background:#1f1f1f; border:1px solid #333; border-radius:10px; color:white; outline:none;">
+          <option value="taxi">🚕 تكسي</option><option value="tuktuk">🛺 تكتك</option><option value="delegate">🛵 مندوب</option>
+        </select>
       </div>
-      <div class="input-group"><label>موديل السيارة</label><input type="text" id="drv-car" placeholder="مثال: تويوتا كامري"></div>
-      <div class="input-group"><label>رقم اللوحة</label><input type="text" id="drv-plate" placeholder="مثال: 12345 بغداد"></div>
+      <div class="input-group"><label>موديل السيارة</label><input type="text" id="drv-car" placeholder="تويوتا كامري"></div>
+      <div class="input-group"><label>رقم اللوحة</label><input type="text" id="drv-plate" placeholder="12345 بغداد"></div>
       <button class="btn-gold" style="width: 100%; margin-top: 10px;" onclick="submitDriver()">سجل الآن</button>
-      <button class="btn-text" onclick="showScreen('home-screen')">رجوع</button>
+      <button class="btn-outline-dark" style="width: 100%; margin-top: 10px;" onclick="showScreen('home-screen')">رجوع</button>
     </div>
   </div>
 
-  <!-- 4. لوحة السائق (مطابقة للصورة 5) -->
+  <!-- 6. لوحة السائق -->
   <div id="driver-dashboard-screen" class="screen">
     <div class="driver-header">
       <h2>لوحة السائق</h2>
@@ -291,210 +280,133 @@
         <span id="status-text" style="font-size: 12px; font-weight: bold;">غير متصل</span>
       </div>
     </div>
-
     <div class="earnings-card">
-      <p style="color: var(--text-muted); font-size: 14px;">أرباح اليوم</p>
+      <p style="color: #888; font-size: 14px;">أرباح اليوم</p>
       <h2>125,000 <span style="font-size: 16px;">د.ع</span></h2>
-      <div class="earnings-stats">
-        <div class="stat-item"><h4>12</h4><p>الرحلات</p></div>
-        <div class="stat-item"><h4>8.5</h4><p>ساعات العمل</p></div>
-        <div class="stat-item"><h4>4.9</h4><p>التقييم</p></div>
-      </div>
     </div>
-
-    <!-- كرت طلب الرحلة -->
     <div class="incoming-ride" id="incoming-ride">
-      <div class="ride-header">
-        <h4>طلب رحلة جديد</h4>
-        <span style="color: var(--danger); font-weight: bold;">15 ثانية</span>
-      </div>
+      <div class="ride-header"><h4 style="color:var(--gold);">طلب رحلة جديد</h4></div>
       <div class="ride-details">
-        <div class="ride-point"><i class="fa-solid fa-circle" style="color: var(--success); font-size: 10px; margin-top: 6px;"></i> <div><b>الانطلاق:</b> شارع فلسطين - المنصور</div></div>
-        <div class="ride-point"><i class="fa-solid fa-location-dot" style="color: var(--danger);"></i> <div><b>الوجهة:</b> زيونة - شارع الربيعي (7.4 كم)</div></div>
-        
-        <div class="ride-price">
-          <h3>8,000 د.ع</h3>
-          <button class="btn-accept" onclick="acceptRide()">قبول الطلب</button>
-        </div>
+        <p style="margin-bottom:10px;"><b>الوجهة:</b> المنصور - شارع 14 رمضان</p>
+        <p style="margin-bottom:20px;"><b>السعر:</b> 8,000 د.ع</p>
+        <button class="btn-accept" onclick="acceptRide()">قبول الطلب</button>
       </div>
     </div>
-
-    <button class="btn-text" style="margin-top: auto; padding: 20px;" onclick="showScreen('home-screen')">العودة للرئيسية</button>
+    <button class="btn-outline-dark" style="margin: 20px;" onclick="showScreen('home-screen')">العودة للرئيسية</button>
   </div>
 
-  <!-- 5. لوحة الإدارة -->
-  <div id="admin-screen" class="screen">
-    <div style="padding: 20px; background: #111; display: flex; align-items: center; gap: 15px;">
+  <!-- 7. لوحة الإدارة -->
+  <div id="admin-screen" class="screen" style="background: var(--bg-dark); color: white;">
+    <div style="padding: 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333;">
       <i class="fa-solid fa-arrow-right" onclick="showScreen('home-screen')" style="color: var(--gold); font-size: 20px; cursor: pointer;"></i>
       <h2>لوحة الإدارة</h2>
     </div>
-    <div style="padding: 20px;" id="admin-list">
-      <!-- سيتم تعبئتها بالجافاسكريبت -->
+    <div style="padding: 20px;">
+      <div style="background: #1f1f1f; padding: 15px; border-radius: 10px; border: 1px solid #333;">
+        <h4 style="color: var(--gold);">علي حسين</h4>
+        <p style="font-size: 12px; color: #aaa; margin: 5px 0;">تويوتا كامري - 12345 بغداد</p>
+        <button class="btn-gold" style="padding: 8px 15px; font-size: 12px; margin-top: 10px;" onclick="alert('تمت الموافقة')">موافقة</button>
+      </div>
     </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // ==========================================
-    // 1. إدارة الشاشات
-    // ==========================================
+    // إدارة الشاشات
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      if (id === 'admin-screen') loadAdminData();
     }
 
-    function toggleDrawer() {
-      document.getElementById('drawer').classList.toggle('open');
-    }
-
-    // ==========================================
-    // 2. المصادقة (تسجيل الدخول)
-    // ==========================================
+    // المصادقة
     function loginUser() {
       const phone = document.getElementById('login-phone').value;
       if (phone.length < 10) return alert('أدخل رقم هاتف صحيح');
+      showScreen('home-screen');
+    }
+    function skipLogin() { showScreen('home-screen'); }
+    function logout() { showScreen('welcome-screen'); }
+
+    // الخريطة ونظام الدبوس
+    let map, mapInit = false, userLoc = [33.3152, 44.3661], destLoc = null, routeLine = null;
+
+    function openMap(service) {
+      document.getElementById('map-screen').style.display = 'block';
+      document.getElementById('cars-sheet').classList.remove('open');
       
-      localStorage.setItem('iq_user', phone);
-      document.getElementById('user-name-display').innerText = "علي";
-      document.getElementById('drawer-name').innerText = "علي حسين";
-      showScreen('home-screen');
-      initMap(); // تشغيل الخريطة بعد الدخول
-    }
+      if (!mapInit) {
+        // خريطة داكنة
+        map = L.map('map', { zoomControl: false, attributionControl: false }).setView(userLoc, 15);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-    function skipLogin() {
-      document.getElementById('user-name-display').innerText = "زائر";
-      showScreen('home-screen');
-      initMap();
-    }
-
-    function logout() {
-      localStorage.removeItem('iq_user');
-      showScreen('welcome-screen');
-    }
-
-    // زر الإدارة السري (اضغط 3 مرات على الشعار)
-    let adminClicks = 0;
-    document.querySelector('.logo-box i').addEventListener('click', () => {
-      adminClicks++;
-      if (adminClicks >= 3) { adminClicks = 0; showScreen('admin-screen'); }
-    });
-
-    // ==========================================
-    // 3. الخريطة (Dark Mode) والخوارزمية
-    // ==========================================
-    let map, mapInit = false;
-    let userLoc = [33.3152, 44.3661]; // بغداد افتراضي
-    let destLoc = null;
-    let routeLine = null;
-
-    function initMap() {
-      if (mapInit) { setTimeout(() => map.invalidateSize(), 100); return; }
-
-      // خريطة داكنة فخمة (CartoDB DarkMatter)
-      map = L.map('map', { zoomControl: false, attributionControl: false }).setView(userLoc, 15);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19
-      }).addTo(map);
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          userLoc = [pos.coords.latitude, pos.coords.longitude];
-          map.setView(userLoc, 16);
-          L.circleMarker(userLoc, { radius: 8, fillColor: '#00C9A7', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
-        });
-      }
-
-      map.on('moveend', async () => {
-        const center = map.getCenter();
-        destLoc = [center.lat, center.lng];
-        document.getElementById('dest-input').value = "جاري تحديد العنوان...";
-
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&accept-language=ar`);
-          const data = await res.json();
-          const addr = data.display_name ? data.display_name.split(',')[0] : "موقع محدد";
-          document.getElementById('dest-input').value = addr;
-          
-          // حساب سعر تقديري فوري
-          document.getElementById('price-eco').innerText = "3,000 د.ع";
-          document.getElementById('price-vip').innerText = "5,000 د.ع";
-          document.getElementById('price-xl').innerText = "7,000 د.ع";
-        } catch (e) {
-          document.getElementById('dest-input').value = "موقع محدد على الخريطة";
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((pos) => {
+            userLoc = [pos.coords.latitude, pos.coords.longitude];
+            map.setView(userLoc, 16);
+          });
         }
-      });
 
-      mapInit = true;
-    }
-
-    function confirmDestination() {
-      if (!destLoc) return alert('حرك الخريطة أولاً لتحديد الوجهة');
-      
-      // رسم مسار
-      try {
-        const url = `https://router.project-osrm.org/route/v1/driving/${userLoc[1]},${userLoc[0]};${destLoc[1]},${destLoc[0]}?overview=full&geometries=geojson`;
-        fetch(url).then(r => r.json()).then(data => {
-          if (data.routes && data.routes.length > 0) {
-            if (routeLine) map.removeLayer(routeLine);
-            routeLine = L.geoJSON(data.routes[0].geometry, {
-              style: { color: '#D4AF37', weight: 6, opacity: 0.9 } // مسار ذهبي
-            }).addTo(map);
-            
-            const km = (data.routes[0].distance / 1000).toFixed(1);
-            document.getElementById('price-eco').innerText = Math.round(km * 1000).toLocaleString() + ' د.ع';
-            alert(`تم تحديد المسار! المسافة: ${km} كم\nجاري البحث عن سائق...`);
+        map.on('moveend', async () => {
+          const center = map.getCenter();
+          destLoc = [center.lat, center.lng];
+          document.getElementById('map-address').value = "جاري تحديد العنوان...";
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&accept-language=ar`);
+            const data = await res.json();
+            document.getElementById('map-address').value = data.display_name ? data.display_name.split(',')[0] : "موقع محدد";
+          } catch (e) {
+            document.getElementById('map-address').value = "موقع محدد على الخريطة";
           }
         });
-      } catch (e) { alert('خطأ في الاتصال.'); }
+        mapInit = true;
+      } else {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
     }
 
-    // ==========================================
-    // 4. نظام السائق والإدارة
-    // ==========================================
-    function openDriverDashboard() {
-      toggleDrawer();
-      showScreen('driver-dashboard-screen');
+    function closeMap() {
+      document.getElementById('map-screen').style.display = 'none';
     }
 
+    function selectCar(el) {
+      document.querySelectorAll('.car-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // محاكاة حساب المسار
+    function requestRide() {
+      if (!destLoc) return alert('حرك الخريطة لتحديد وجهتك');
+      
+      document.getElementById('map-address').value = "جاري حساب المسار...";
+      
+      fetch(`https://router.project-osrm.org/route/v1/driving/${userLoc[1]},${userLoc[0]};${destLoc[1]},${destLoc[0]}?overview=full&geometries=geojson`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.routes && data.routes.length > 0) {
+            const km = (data.routes[0].distance / 1000).toFixed(1);
+            if (routeLine) map.removeLayer(routeLine);
+            routeLine = L.geoJSON(data.routes[0].geometry, { style: { color: '#D4AF37', weight: 6 } }).addTo(map);
+            
+            document.getElementById('price-taxi').innerText = Math.round(km * 1000).toLocaleString() + ' د.ع';
+            document.getElementById('price-premium').innerText = Math.round(km * 1500).toLocaleString() + ' د.ع';
+            
+            document.getElementById('cars-sheet').classList.add('open');
+          }
+        }).catch(() => alert('تعذر حساب المسار، تأكد من الإنترنت.'));
+    }
+
+    // السائق والإدارة
+    function openDriverDashboard() { showScreen('driver-dashboard-screen'); }
     let isOnline = false;
     function toggleOnline() {
       isOnline = !isOnline;
-      const toggle = document.getElementById('status-toggle');
-      const text = document.getElementById('status-text');
-      
-      if (isOnline) {
-        toggle.classList.add('active');
-        text.innerText = "متصل الآن";
-        text.style.color = "var(--success)";
-        setTimeout(() => { if(isOnline) document.getElementById('incoming-ride').classList.add('active'); }, 3000);
-      } else {
-        toggle.classList.remove('active');
-        text.innerText = "غير متصل";
-        text.style.color = "var(--text-muted)";
-        document.getElementById('incoming-ride').classList.remove('active');
-      }
+      document.getElementById('status-toggle').classList.toggle('active');
+      document.getElementById('status-text').innerText = isOnline ? "متصل الآن" : "غير متصل";
+      if (isOnline) setTimeout(() => { if(isOnline) document.getElementById('incoming-ride').classList.add('active'); }, 3000);
+      else document.getElementById('incoming-ride').classList.remove('active');
     }
-
-    function acceptRide() {
-      alert('تم قبول الرحلة! سيتم توجيهك إلى الزبون.');
-      document.getElementById('incoming-ride').classList.remove('active');
-    }
-
-    function submitDriver() {
-      alert('تم إرسال طلبك للإدارة بنجاح! يرجى الانتظار للموافقة.');
-      showScreen('home-screen');
-    }
-
-    function loadAdminData() {
-      document.getElementById('admin-list').innerHTML = `
-        <div style="background: var(--bg-card); padding: 15px; border-radius: 10px; border: 1px solid #333;">
-          <h4 style="color: var(--gold);">علي حسين</h4>
-          <p style="font-size: 12px; color: #aaa; margin: 5px 0;">تويوتا كامري - 12345 بغداد</p>
-          <button class="btn-gold" style="padding: 8px 15px; font-size: 12px; margin-top: 10px;" onclick="alert('تمت الموافقة')">موافقة</button>
-        </div>
-      `;
-    }
+    function acceptRide() { alert('تم القبول!'); document.getElementById('incoming-ride').classList.remove('active'); }
+    function submitDriver() { alert('تم إرسال طلبك للإدارة'); showScreen('home-screen'); }
   </script>
 </body>
 </html>
